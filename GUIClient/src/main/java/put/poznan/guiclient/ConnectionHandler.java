@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.net.Socket;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
-import java.util.concurrent.LinkedBlockingQueue;
 
 public class ConnectionHandler {
     private int portNumber;
@@ -25,12 +24,18 @@ public class ConnectionHandler {
     }
 
     public void establishConnection() throws IOException {
+        System.out.println("Before clientSocket creation");
         Socket clientSocket = new Socket(this.IPAddress, this.portNumber);
+        System.out.println("After");
         blockingQueue = new LinkedBlockingDeque<>();
 
         CommunicationThread commThreadClass = new CommunicationThread(clientSocket, this.blockingQueue);
         Thread commThread = new Thread(commThreadClass);
         commThread.start();
+
+        StatusThread statusThreadClass = new StatusThread(this.blockingQueue);
+        Thread statusThread = new Thread(statusThreadClass);
+        statusThread.start();
     }
 
     public void writeToQueue(String[] message){
