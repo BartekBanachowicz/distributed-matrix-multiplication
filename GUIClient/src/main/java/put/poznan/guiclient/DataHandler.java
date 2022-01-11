@@ -2,6 +2,7 @@ package put.poznan.guiclient;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Scanner;
@@ -39,6 +40,7 @@ public class DataHandler {
                 buffer.remove(0);
             }
         }
+        scanner.close();
         return matrix;
     }
 
@@ -70,8 +72,25 @@ public class DataHandler {
         this.resultMatrix[x][y] = value;
     }
 
-    public void saveMatrixToFile(Path filePath, double[][] matrix){
+    public void saveMatrixToFile(Path filePath, double[][] matrix) throws FileNotFoundException {
+        int matrixSize = matrix.length;
+        File outputFile = new File(String.valueOf(filePath));
+        PrintWriter writer = new PrintWriter(outputFile);
 
+        for(int i=0; i<matrixSize; i++){
+            for(int j=0; j<matrixSize-1; j++){
+                writer.print(matrix[i][j]);
+                writer.print(", ");
+            }
+
+            writer.print(matrix[i][matrixSize-1]);
+
+            if(i != matrixSize-1){
+                writer.print("\n");
+            }
+        }
+
+        writer.close();
     }
 
 }
