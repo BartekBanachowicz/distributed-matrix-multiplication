@@ -5,9 +5,11 @@ import java.io.IOException;
 
 public class ConnectionHandlerTest {
     @Test
-    void testConnectionHandler_establishConnection_expextingSuccess() throws IOException {
+    void testConnectionHandler_establishConnection_expextingSuccess() throws IOException, InterruptedException {
         ConnectionHandler handler = new ConnectionHandler();
         handler.setConnectionParams(9090, "172.20.127.248");
         handler.establishConnection();
+
+        while(true){}
     }
 }
