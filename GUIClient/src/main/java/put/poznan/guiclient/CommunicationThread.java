@@ -4,9 +4,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
-import java.util.Deque;
-import java.util.LinkedList;
-import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.BlockingQueue;
 
 public class CommunicationThread implements Runnable{
@@ -21,7 +18,6 @@ public class CommunicationThread implements Runnable{
         this.queue = xQueue;
         this.inputStream = this.clientSocket.getInputStream();
         this.outputStream = this.clientSocket.getOutputStream();
-
     }
 
     @Override

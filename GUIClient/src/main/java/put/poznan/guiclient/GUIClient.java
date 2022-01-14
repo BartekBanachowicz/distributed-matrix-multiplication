@@ -14,6 +14,8 @@ import java.io.IOException;
 
 public class GUIClient extends Application {
     private static Stage stage;
+    private static DataHandler dataHandler = new DataHandler();
+    private static ConnectionHandler connectionHandler = new ConnectionHandler();
 
     @Override
     public void start(Stage xStage) throws IOException {
@@ -27,6 +29,14 @@ public class GUIClient extends Application {
 
     public static Stage getStage() {
         return stage;
+    }
+
+    public static DataHandler getDataHandler(){
+        return dataHandler;
+    }
+
+    public static ConnectionHandler getConnectionHandler() {
+        return connectionHandler;
     }
 
     public static void main(String[] args) {

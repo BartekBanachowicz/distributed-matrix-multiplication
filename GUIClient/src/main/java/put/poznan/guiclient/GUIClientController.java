@@ -1,25 +1,20 @@
 package put.poznan.guiclient;
 
-import java.awt.Desktop;
-import java.io.File;
-
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
-import javafx.scene.control.Button;
 import javafx.stage.FileChooser;
-import put.poznan.guiclient.GUIClient;
 
+import java.awt.*;
+import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 
 public class GUIClientController {
-    private DataHandler dataHandler = new DataHandler();
-    private ConnectionHandler connectionHandler = new ConnectionHandler();
+    private ConnectionHandler connectionHandler = GUIClient.getConnectionHandler();
+    private DataHandler dataHandler = GUIClient.getDataHandler();
     private Desktop desktop = Desktop.getDesktop();
+
 
     /*private EventHandler<ActionEvent> browserButtonEventHandler = new EventHandler<ActionEvent>() {
         @Override
@@ -64,7 +59,10 @@ public class GUIClientController {
         if(serverAddressField.getText().matches("[0-9]+.[0-9]+.[0-9]+.[0-9]+:[0-9]+")){
             String[] address = serverAddressField.getText().split(":");
             connectionHandler.setConnectionParams(Integer.parseInt(address[1]), address[0]);
-            connectionHandler.establishConnection();
+
+            HelperThread helperThreadClass = new HelperThread(dataHandler, connectionHandler, "CONNECT");
+            Thread helperThread = new Thread(helperThreadClass);
+            helperThread.start();
         }
         else{
             serverAddressField.setStyle("-fx-border-color: #bb3e03");

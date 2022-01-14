@@ -13,6 +13,9 @@ public class DataHandler {
     private double[][] leftMatrix;
     private double[][] rightMatrix;
     private double[][] resultMatrix;
+    private Path leftMatrixPath;
+    private Path rightMatrixPath;
+    private Path resultMatrixPath;
     private int matrixSize;
 
     public double[][] loadMatrixFromFile(Path filePath) throws FileNotFoundException {
@@ -44,12 +47,12 @@ public class DataHandler {
         return matrix;
     }
 
-    public void addLeftMatrix(Path filePath) throws FileNotFoundException {
-        this.leftMatrix = loadMatrixFromFile(filePath);
+    public void addLeftMatrix() throws FileNotFoundException {
+        this.leftMatrix = loadMatrixFromFile(this.leftMatrixPath);
     }
 
-    public void addRightMatrix(Path filePath) throws FileNotFoundException {
-        this.rightMatrix = loadMatrixFromFile(filePath);
+    public void addRightMatrix() throws FileNotFoundException {
+        this.rightMatrix = loadMatrixFromFile(this.rightMatrixPath);
     }
 
     public double[][] getLeftMatrix() {
@@ -60,11 +63,17 @@ public class DataHandler {
         return rightMatrix;
     }
 
-    public void generateMatrixToFile(int size, Path filePath){
+    public void generateMatrixToFile(int size, Path filePath){}
 
+    public void setLeftMatrixPath(Path leftMatrixPath) {
+        this.leftMatrixPath = leftMatrixPath;
     }
 
-    private void initializeResultMatrix(){
+    public void setRightMatrixPath(Path rightMatrixPath) {
+        this.rightMatrixPath = rightMatrixPath;
+    }
+
+    public void initializeResultMatrix(){
         this.resultMatrix = new double[this.matrixSize][this.matrixSize];
     }
 
