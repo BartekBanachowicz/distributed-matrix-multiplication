@@ -1,21 +1,32 @@
 package put.poznan.guiclient;
 
 import javafx.application.Application;
+import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import javafx.scene.control.TextField;
+
 
 import java.io.IOException;
 
 public class GUIClient extends Application {
+    private static Stage stage;
+
     @Override
-    public void start(Stage stage) throws IOException {
+    public void start(Stage xStage) throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(GUIClient.class.getResource("main-view.fxml"));
         Scene scene = new Scene(fxmlLoader.load(), 700, 480);
+        this.stage = xStage;
         stage.setTitle("Matrix multiplication");
         stage.setScene(scene);
         stage.show();
+    }
+
+    public static Stage getStage() {
+        return stage;
     }
 
     public static void main(String[] args) {

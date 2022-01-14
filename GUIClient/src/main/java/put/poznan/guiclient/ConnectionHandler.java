@@ -25,6 +25,7 @@ public class ConnectionHandler {
     }
 
     public void establishConnection() throws IOException {
+        System.out.println("Setting up connection to: "+getIPAddress()+":"+getPortNumber());
         Socket clientSocket = new Socket(this.IPAddress, this.portNumber);
 
         CommunicationThread commThreadClass = new CommunicationThread(clientSocket, queue);

@@ -9,6 +9,7 @@ module put.poznan.guiclient {
     requires org.kordamp.ikonli.javafx;
     requires org.kordamp.bootstrapfx.core;
     requires eu.hansolo.tilesfx;
+    requires java.desktop;
 
     opens put.poznan.guiclient to javafx.fxml;
     exports put.poznan.guiclient;
