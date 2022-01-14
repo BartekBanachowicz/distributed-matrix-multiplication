@@ -6,14 +6,14 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.util.concurrent.BlockingQueue;
 
-public class CommunicationThread implements Runnable{
+public class SenderThread implements Runnable{
     private Socket clientSocket;
     public BlockingQueue<String[]> queue;
     private Boolean continueProcessing = true;
     private InputStream inputStream;
     private OutputStream outputStream;
 
-    CommunicationThread(Socket xClientSocket, BlockingQueue<String[]> xQueue) throws IOException {
+    SenderThread(Socket xClientSocket, BlockingQueue<String[]> xQueue) throws IOException {
         this.clientSocket = xClientSocket;
         this.queue = xQueue;
         this.inputStream = this.clientSocket.getInputStream();

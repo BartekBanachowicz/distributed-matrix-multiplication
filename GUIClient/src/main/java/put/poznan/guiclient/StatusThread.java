@@ -1,17 +1,12 @@
 package put.poznan.guiclient;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.Socket;
-import java.util.Deque;
-import java.util.LinkedList;
 import java.util.concurrent.BlockingQueue;
 
 public class StatusThread implements Runnable {
     private BlockingQueue<String[]> queue;
     private Boolean continueProcessing = true;
-    private CommunicationThread commThread;
+    private SenderThread commThread;
 
     StatusThread(BlockingQueue<String[]> xQueue) throws IOException {
         this.queue = xQueue;

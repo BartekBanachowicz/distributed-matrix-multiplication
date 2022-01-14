@@ -2,7 +2,6 @@ package put.poznan.guiclient;
 
 import java.io.IOException;
 import java.net.Socket;
-import java.util.LinkedList;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
@@ -28,9 +27,13 @@ public class ConnectionHandler {
         System.out.println("Setting up connection to: "+getIPAddress()+":"+getPortNumber());
         Socket clientSocket = new Socket(this.IPAddress, this.portNumber);
 
-        CommunicationThread commThreadClass = new CommunicationThread(clientSocket, queue);
-        Thread commThread = new Thread(commThreadClass);
-        commThread.start();
+        SenderThread sendThreadClass = new SenderThread(clientSocket, queue);
+        Thread sendThread = new Thread(sendThreadClass);
+        sendThread.start();
+
+        ReceiverThread receiverThreadClass = new ReceiverThread(clientSocket, queue);
+        Thread receiverThread = new Thread(receiverThreadClass);
+        receiverThread.start();
 
         StatusThread statusThreadClass = new StatusThread(queue);
         Thread statusThread = new Thread(statusThreadClass);

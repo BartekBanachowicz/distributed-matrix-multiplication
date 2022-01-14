@@ -9,6 +9,7 @@ import javafx.stage.FileChooser;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 
 public class GUIClientController {
     private ConnectionHandler connectionHandler = GUIClient.getConnectionHandler();
@@ -50,6 +51,12 @@ public class GUIClientController {
     private Button leftMatrixButton;
 
     @FXML
+    private TextField matrixSizeField;
+
+    @FXML
+    private Button generateButton;
+
+    @FXML
     protected void onHelloButtonClick() {
         welcomeText.setText("Welcome to JavaFX Application!");
     }
@@ -67,6 +74,45 @@ public class GUIClientController {
         else{
             serverAddressField.setStyle("-fx-border-color: #bb3e03");
         }
+    }
+
+    @FXML
+    protected void onWriteToNewMatrixSizeField(){
+        if(matrixSizeField.getLength() != 0 && matrixSizeField.getText().matches("[0-9]+")){
+            dataHandler.setNewMatrixSize(Integer.parseInt(matrixSizeField.getText()));
+        }
+        else{
+            matrixSizeField.setText("");
+        }
+    }
+
+    @FXML
+    protected void onWriteToNewMatrixDirectoryField(){
+        if(newMatrixDirectory.getLength() != 0){
+            dataHandler.setNewMatrixPath(Path.of(newMatrixDirectory.getText()));
+        }
+    }
+
+    @FXML
+    protected void onGenerateButtonClick(){
+        if(dataHandler.getNewMatrixPath() == null){
+            if(newMatrixDirectory.getText().length() == 0) { return; }
+            else {
+                dataHandler.setNewMatrixPath(Path.of(newMatrixDirectory.getText()));
+
+                if(dataHandler.getNewMatrixSize() <= 0){
+                    if(matrixSizeField.getText().length() > 0 && matrixSizeField.getText().matches("[0-9]+")){
+                        dataHandler.setNewMatrixSize(Integer.parseInt(matrixSizeField.getText()));
+                    }
+                }
+                else { return; }
+            }
+        }
+
+        HelperThread helperThreadClass = new HelperThread(dataHandler, connectionHandler, "GENERATE");
+        Thread helperThread = new Thread(helperThreadClass);
+        helperThread.start();
+
     }
 
     @FXML

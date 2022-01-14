@@ -16,7 +16,9 @@ public class HelperThread implements Runnable {
 
     private void collectData(){}
 
-    private void generateData(){}
+    private void generateData() throws FileNotFoundException {
+        dataHandler.generateMatrixToFile();
+    }
 
     private void connectToServer() throws IOException {
         connectionHandler.establishConnection();
@@ -45,6 +47,12 @@ public class HelperThread implements Runnable {
             case "START":
                             try {
                                 this.startProcessing();
+                            } catch (FileNotFoundException e) {
+                                e.printStackTrace();
+                            }
+            case "GENERATE":
+                            try {
+                                this.generateData();
                             } catch (FileNotFoundException e) {
                                 e.printStackTrace();
                             }

@@ -21,7 +21,7 @@ public class GUIClient extends Application {
     public void start(Stage xStage) throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(GUIClient.class.getResource("main-view.fxml"));
         Scene scene = new Scene(fxmlLoader.load(), 700, 480);
-        this.stage = xStage;
+        stage = xStage;
         stage.setTitle("Matrix multiplication");
         stage.setScene(scene);
         stage.show();

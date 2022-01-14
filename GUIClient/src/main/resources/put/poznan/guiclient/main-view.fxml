@@ -91,10 +91,10 @@
                      <Font size="10.0" />
                   </font>
                </Text>
-               <TextField fx:id="newMatrixDirectory" layoutX="16.0" layoutY="292.0" prefHeight="25.0" prefWidth="224.0" promptText="Directory for file" />
+               <TextField fx:id="newMatrixDirectory" layoutX="16.0" layoutY="292.0" onAction="#onWriteToNewMatrixDirectoryField" prefHeight="25.0" prefWidth="224.0" promptText="Directory for file" />
                <Button fx:id="newMatrixButton" layoutX="255.0" layoutY="291.0" mnemonicParsing="false" onMouseClicked="#onBrowserButtonClick_new" prefHeight="25.0" prefWidth="64.0" style="-fx-background-color: #adb5bd;" text="Browser" />
-               <TextField layoutX="17.0" layoutY="324.0" prefHeight="25.0" prefWidth="224.0" promptText="Matrix size" />
-               <Button layoutX="255.0" layoutY="323.0" mnemonicParsing="false" style="-fx-background-color: #ced4da;" text="Generate" />
+               <TextField id="matrixSizeField" fx:id="matrixSizeField" layoutX="17.0" layoutY="324.0" onAction="#onWriteToNewMatrixSizeField" prefHeight="25.0" prefWidth="224.0" promptText="Matrix size" />
+               <Button fx:id="generateButton" layoutX="255.0" layoutY="323.0" mnemonicParsing="false" onMouseClicked="#onGenerateButtonClick" style="-fx-background-color: #ced4da;" text="Generate" />
                <ProgressBar layoutX="18.0" layoutY="403.0" prefHeight="18.0" prefWidth="303.0" progress="0.0" />
                <Button layoutX="19.0" layoutY="370.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="146.0" style="-fx-background-color: #277da1;" text="Start calculations" textAlignment="CENTER" textFill="WHITE">
                   <font>
