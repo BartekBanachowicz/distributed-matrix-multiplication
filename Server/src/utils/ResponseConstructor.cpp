@@ -69,4 +69,11 @@ namespace mm_server::utils {
             this->construct(value);
         }
     }
+
+    void ResponseConstructor::post_content(const std::vector<std::string>& content, int line_size) {
+        this->initialize(content.size(), line_size);
+        for (const std::string& item : content) {
+            this->construct(item);
+        }
+    }
 }

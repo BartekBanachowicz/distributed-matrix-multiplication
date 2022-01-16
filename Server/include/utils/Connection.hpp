@@ -2,9 +2,12 @@
 
 #include <string>
 
+#include <utils/Type.hpp>
+
+
 namespace mm_server::utils {
     struct Connection {
-        int type = 0;
+        Type type = Type::unassigned;
         std::string address;
     };
 }

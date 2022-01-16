@@ -14,6 +14,7 @@
 #include <utils/RequestParser.hpp>
 #include <utils/ResponseConstructor.hpp>
 #include <utils/Value.hpp>
+#include <utils/Type.hpp>
 #include <err/server_exception.hpp>
 #include <err/connection_exception.hpp>
 
@@ -93,6 +94,7 @@ namespace mm_server {
     }
 
     void ServerRunner::accept_connection() {
+        char buffer[30];
         sockaddr address;
         socklen_t length = sizeof(sockaddr);
         utils::Connection connection;
@@ -104,7 +106,12 @@ namespace mm_server {
 
         event.events = EPOLLIN | EPOLLONESHOT;
 
-        connection.address = std::string(address.sa_data);
+        if (inet_ntop(AF_INET, &address.sa_data, buffer, 30) == nullptr) {
+            throw err::server_exception("Client address read error");
+        }
+
+        connection.address = std::string(buffer);
+        std::cout << connection.address << std::endl;
         this->connections_mutex.lock();
         this->connections[event.data.fd] = std::move(connection);
         this->connections_mutex.unlock();
@@ -113,14 +120,7 @@ namespace mm_server {
         }
     }
 
-    void ServerRunner::close_connection(int descriptor, int code) {
-        if (code != 0) {
-            utils::ResponseConstructor response_constructor(descriptor);
-            std::map<std::string, std::string> header;
-            header["CODE"] = std::to_string(code);
-            response_constructor.post_header(header);
-        }
-
+    void ServerRunner::close_connection(int descriptor) {
         close(descriptor);
         this->connections_mutex.lock();
         this->connections.erase(this->connections.find(descriptor));
@@ -128,29 +128,33 @@ namespace mm_server {
     }
 
     void ServerRunner::process_unassigned(int descriptor) {
-        int value;
         utils::RequestParser request_parser(descriptor);
         utils::ResponseConstructor response_constructor(descriptor);
         std::map<std::string, std::string> header = request_parser.get_header();
+        int value;
+        bool server_busy = false;
 
         try {
-            if (header.at("POST") != "REGISTER") {
+            if (this->value_identifier.at(header.at("POST"), value) != utils::Value::enter) {
                 throw err::connection_exception(1);
             }
 
             switch (this->value_identifier.at(header.at("TYPE"), value)) {
                 case utils::Value::unit:
                     this->connections_mutex.lock();
-                    this->connections[descriptor].type = 1;
+                    this->connections[descriptor].type = utils::Type::unit;
                     this->connections_mutex.unlock();
                     break;
                 case utils::Value::client:
                     this->connections_mutex.lock();
-                    this->connections[descriptor].type = 2;
+                    for (const auto& [key, value] : this->connections) {
+                        if (value.type == utils::Type::client) { server_busy = true; }
+                    }
+
+                    this->connections[descriptor].type = utils::Type::client;
                     this->connections_mutex.unlock();
                     break;
                 default:
-                    std::cout << value << std::endl;
                     throw err::connection_exception(1);
             }
         }
@@ -158,24 +162,89 @@ namespace mm_server {
             throw err::connection_exception(1);
         }
 
+        if (server_busy) { throw err::connection_exception(2); }
+
         header.clear();
         header["CODE"] = "0";
         response_constructor.post_header(header);
     }
 
+    void ServerRunner::process_client(int descriptor) {
+        utils::RequestParser request_parser(descriptor);
+        utils::ResponseConstructor response_constructor(descriptor);
+        std::map<std::string, std::string> request_header = request_parser.get_header();
+        std::map<std::string, std::string> response_header;
+        int value;
+        bool units_ready = false;
+        std::vector<std::string> units;
+        std::vector<std::string> results;
+
+        response_header["CODE"] = "0";
+
+        try {
+            if (!request_header["GET"].empty()) {
+                if (this->value_identifier.at(request_header["GET"], value) == utils::Value::status) {
+                    this->connections_mutex.lock();
+                    for (const auto& [key, value] : this->connections) {
+                        if (value.type == utils::Type::unit) { units.push_back(value.address); }
+                    }
+
+                    this->connections_mutex.unlock();
+                    response_header["STATUS"] = this->processor.get_status();
+                    if (units.size() != 0) { response_header["UNITS"] = std::to_string(units.size()); }
+                    results = this->processor.get_update();
+                    if (results.size() != 0) { response_header["RESULTS"] = std::to_string(results.size()); }
+                    response_constructor.post_header(response_header);
+                    response_constructor.post_content(units, 1);
+                    response_constructor.post_content(results, 3);
+                }
+            }
+            else if (!request_header["POST"].empty()) {
+                switch (this->value_identifier.at(request_header["POST"], value)) {
+                    case utils::Value::left_matrix:
+                        this->processor.set_left_matrix(request_parser.get_content());
+                        break;
+                    case utils::Value::right_matrix:
+                        this->processor.set_right_matrix(request_parser.get_content());
+                        break;
+                    case utils::Value::start:
+                        this->connections_mutex.lock();
+                        for (const auto& [key, value] : this->connections) {
+                            if (value.type == utils::Type::unit) { units_ready = true; }
+                        }
+
+                        this->connections_mutex.unlock();
+                        // UNCOMMENT WHEN UNIT READY
+                        // if (!units_ready) { throw err::connection_exception(13); }
+
+                        this->processor.run();
+                        break;
+                }
+
+                response_constructor.post_header(response_header);
+            }
+            else {
+                throw err::connection_exception(1);
+            }
+        }
+        catch (const std::out_of_range&) {
+            throw err::connection_exception(1);
+        }
+    }
+
     void ServerRunner::process_request(int descriptor) {
-        int type;
+        utils::Type type;
         this->connections_mutex.lock();
         type = this->connections[descriptor].type;
         this->connections_mutex.unlock();
-
-        process_unassigned(descriptor);
-
-        // switch (type) {
-        //     case 0:
-        //         process_unassigned(descriptor);
-        //         break;
-        // }
+        switch (type) {
+            case utils::Type::unassigned:
+                this->process_unassigned(descriptor);
+                break;
+            case utils::Type::client:
+                this->process_client(descriptor);
+                break;
+        }
     }
 
     void ServerRunner::handle_connection(epoll_event event) {
@@ -190,8 +259,15 @@ namespace mm_server {
                 this->process_request(event.data.fd);
             }
             catch (const err::connection_exception& err) {
-                this->close_connection(event.data.fd, err.get_code());
-                return;
+                if (err.get_code() == 0) {
+                    this->close_connection(event.data.fd);
+                    return;
+                }
+
+                utils::ResponseConstructor response_constructor(event.data.fd);
+                std::map<std::string, std::string> header;
+                header["CODE"] = std::to_string(err.get_code());
+                response_constructor.post_header(header);
             }
         }
         else if (event.data.fd == this->socket_descriptor) {

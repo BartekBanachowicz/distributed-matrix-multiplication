@@ -11,6 +11,7 @@
 
 #include <utils/Connection.hpp>
 #include <utils/ValueIdentifier.hpp>
+#include <proc/Processor.hpp>
 
 
 namespace mm_server {
@@ -32,10 +33,12 @@ namespace mm_server {
             std::map<int, utils::Connection> connections;
             std::mutex connections_mutex;
             utils::ValueIdentifier value_identifier;
+            proc::Processor processor;
 
             void accept_connection();
-            void close_connection(int descriptor, int status);
+            void close_connection(int descriptor);
             void process_unassigned(int descriptor);
+            void process_client(int descriptor);
             void process_request(int descriptor);
             void handle_connection(epoll_event event);
             void handle_connection_wrapper(epoll_event event, int thread_i);

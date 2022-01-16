@@ -13,6 +13,11 @@ namespace mm_server::utils {
 
         private:
             const std::map<std::string, Value> values = {
+                {"REGISTER", Value::enter},
+                {"LEFT-MATRIX", Value::left_matrix},
+                {"RIGHT-MATRIX", Value::right_matrix},
+                {"START", Value::start},
+                {"STATUS", Value::status},
                 {"UNIT", Value::unit},
                 {"CLIENT", Value::client}
             };

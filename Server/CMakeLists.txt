@@ -17,9 +17,13 @@ add_executable(mm_server
     include/utils/Connection.hpp
     include/utils/ValueIdentifier.hpp
     include/utils/Value.hpp
+    include/utils/Type.hpp
     src/utils/RequestParser.cpp
     src/utils/ResponseConstructor.cpp
     src/utils/ValueIdentifier.cpp
+
+    include/proc/Processor.hpp
+    src/proc/Processor.cpp
 )
 target_include_directories(mm_server PUBLIC include/)
 target_link_libraries(mm_server PUBLIC -pthread)

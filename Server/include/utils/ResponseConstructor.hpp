@@ -2,6 +2,7 @@
 
 #include <string>
 #include <map>
+#include <vector>
 
 
 namespace mm_server::utils {
@@ -9,6 +10,7 @@ namespace mm_server::utils {
         public:
             ResponseConstructor(int descriptor);
             void post_header(const std::map<std::string, std::string>& header);
+            void post_content(const std::vector<std::string>& content, int line_size);
 
         private:
             int descriptor;

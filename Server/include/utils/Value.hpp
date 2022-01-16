@@ -2,7 +2,12 @@
 
 
 namespace mm_server::utils {
-    enum Value {
+    enum class Value {
+        enter,
+        left_matrix,
+        right_matrix,
+        start,
+        status,
         unit,
         client,
         numeric
