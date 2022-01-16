@@ -3,9 +3,8 @@
 #include <string>
 
 namespace mm_server::utils {
-    struct TCPSocket {
+    struct Connection {
         int type = 0;
-        int descriptor;
         std::string address;
     };
 }

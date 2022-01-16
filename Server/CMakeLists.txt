@@ -4,11 +4,22 @@ project(mm_server)
 add_executable(mm_server
     src/main.cpp
 
-    include/utils/ServerRunner.hpp
-    include/utils/server_exception.hpp
-    include/utils/TCPSocket.hpp
-    src/utils/ServerRunner.cpp
-    src/utils/server_exception.cpp
+    include/ServerRunner.hpp
+    src/ServerRunner.cpp
+
+    include/err/server_exception.hpp
+    include/err/connection_exception.hpp
+    src/err/server_exception.cpp
+    src/err/connection_exception.cpp
+
+    include/utils/RequestParser.hpp
+    include/utils/ResponseConstructor.hpp
+    include/utils/Connection.hpp
+    include/utils/ValueIdentifier.hpp
+    include/utils/Value.hpp
+    src/utils/RequestParser.cpp
+    src/utils/ResponseConstructor.cpp
+    src/utils/ValueIdentifier.cpp
 )
 target_include_directories(mm_server PUBLIC include/)
 target_link_libraries(mm_server PUBLIC -pthread)

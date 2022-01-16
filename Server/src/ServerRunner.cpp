@@ -1,4 +1,5 @@
 #include <iostream>
+#include <stdexcept>
 #include <exception>
 #include <system_error>
 #include <map>
@@ -9,11 +10,15 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
-#include <utils/ServerRunner.hpp>
-#include <utils/server_exception.hpp>
+#include <ServerRunner.hpp>
+#include <utils/RequestParser.hpp>
+#include <utils/ResponseConstructor.hpp>
+#include <utils/Value.hpp>
+#include <err/server_exception.hpp>
+#include <err/connection_exception.hpp>
 
 
-namespace mm_server::utils {
+namespace mm_server {
     ServerRunner::ServerRunner(int argc, char *argv[]) {
         int port;
         int option_value;
@@ -30,11 +35,11 @@ namespace mm_server::utils {
                 break;
             case 3:
                 if (inet_pton(AF_INET, argv[1], &address.sin_addr.s_addr) < 0) {
-                    throw server_exception("Program received an invalid ipv4 address");
+                    throw err::server_exception("Program received an invalid ipv4 address");
                 }
                 break;
             default:
-                throw server_exception("Wrong number of program arguments received. Usage: mm_server [<ip_address>] <port_number>");
+                throw err::server_exception("Wrong number of program arguments received. Usage: mm_server [<ip_address>] <port_number>");
         }
 
         // verify and set up the port
@@ -42,114 +47,163 @@ namespace mm_server::utils {
             port = std::stoi(std::string(argv[argc - 1]));
         }
         catch (std::exception&) {
-            throw server_exception("Program received an invalid port number");
+            throw err::server_exception("Program received an invalid port number");
         }
 
         if (port < 1024) {
-            throw server_exception("Port number must be greater than 1023");
+            throw err::server_exception("Port number must be greater than 1023");
         }
 
         address.sin_port = htons(port);
 
         // create and set up the socket
         if ((this->socket_descriptor = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
-            throw server_exception("Server socket creation error");
+            throw err::server_exception("Server socket creation error");
         }
 
         option_value = 1;
         if (setsockopt(this->socket_descriptor, SOL_SOCKET, SO_REUSEADDR, (char*)&option_value, sizeof(int)) == -1) {
-            throw server_exception("Server socket option set error (SO_REUSEADDR)");
+            throw err::server_exception("Server socket option set error (SO_REUSEADDR)");
         }
 
         if (bind(this->socket_descriptor, (sockaddr*)&address, sizeof(sockaddr)) == -1) {
-            throw server_exception("Server socket bind error");
+            throw err::server_exception("Server socket bind error");
         }
 
         // creates the epoll instance
         if ((this->epoll_descriptor = epoll_create1(0)) == -1) {
-            throw server_exception("Epoll creation error");
+            throw err::server_exception("Epoll creation error");
         }
 
         event.events = EPOLLIN | EPOLLONESHOT;
         event.data.fd = this->socket_descriptor;
         if (epoll_ctl(this->epoll_descriptor, EPOLL_CTL_ADD, this->socket_descriptor, &event) == -1) {
-            throw server_exception("Epoll addition error");
+            throw err::server_exception("Epoll addition error");
         }
     }
 
     ServerRunner::~ServerRunner() {
-        this->clients_mutex.lock();
-        for (const auto& [key, value] : this->clients) {
-            close(value.descriptor);
+        this->connections_mutex.lock();
+        for (const auto& [key, value] : this->connections) {
+            close(key);
         }
 
-        this->clients_mutex.unlock();
+        this->connections_mutex.unlock();
         close(this->socket_descriptor);
     }
 
     void ServerRunner::accept_connection() {
         sockaddr address;
         socklen_t length = sizeof(sockaddr);
-        TCPSocket tcp_socket;
+        utils::Connection connection;
         epoll_event event;
 
-        if ((tcp_socket.descriptor = accept(this->socket_descriptor, &address, &length)) == -1) {
-            throw server_exception("Client connection error");
+        if ((event.data.fd = accept(this->socket_descriptor, &address, &length)) == -1) {
+            throw err::server_exception("Client connection error");
         }
-
-        tcp_socket.address = std::string(address.sa_data);
 
         event.events = EPOLLIN | EPOLLONESHOT;
-        event.data.fd = tcp_socket.descriptor;
-        std::cout << "Connected: " << tcp_socket.address << std::endl;
-        this->clients_mutex.lock();
-        this->clients[tcp_socket.descriptor] = std::move(tcp_socket);
-        this->clients_mutex.unlock();
+
+        connection.address = std::string(address.sa_data);
+        this->connections_mutex.lock();
+        this->connections[event.data.fd] = std::move(connection);
+        this->connections_mutex.unlock();
         if (epoll_ctl(this->epoll_descriptor, EPOLL_CTL_ADD, event.data.fd, &event) == -1) {
-            throw server_exception("Epoll addition error");
+            throw err::server_exception("Epoll addition error");
         }
     }
 
-    void ServerRunner::close_connection(int descriptor) {
+    void ServerRunner::close_connection(int descriptor, int code) {
+        if (code != 0) {
+            utils::ResponseConstructor response_constructor(descriptor);
+            std::map<std::string, std::string> header;
+            header["CODE"] = std::to_string(code);
+            response_constructor.post_header(header);
+        }
+
         close(descriptor);
-        this->clients_mutex.lock();
-        this->clients.erase(this->clients.find(descriptor));
-        this->clients_mutex.unlock();
+        this->connections_mutex.lock();
+        this->connections.erase(this->connections.find(descriptor));
+        this->connections_mutex.unlock();
     }
 
+    void ServerRunner::process_unassigned(int descriptor) {
+        int value;
+        utils::RequestParser request_parser(descriptor);
+        utils::ResponseConstructor response_constructor(descriptor);
+        std::map<std::string, std::string> header = request_parser.get_header();
+
+        try {
+            if (header.at("POST") != "REGISTER") {
+                throw err::connection_exception(1);
+            }
+
+            switch (this->value_identifier.at(header.at("TYPE"), value)) {
+                case utils::Value::unit:
+                    this->connections_mutex.lock();
+                    this->connections[descriptor].type = 1;
+                    this->connections_mutex.unlock();
+                    break;
+                case utils::Value::client:
+                    this->connections_mutex.lock();
+                    this->connections[descriptor].type = 2;
+                    this->connections_mutex.unlock();
+                    break;
+                default:
+                    std::cout << value << std::endl;
+                    throw err::connection_exception(1);
+            }
+        }
+        catch (const std::out_of_range&) {
+            throw err::connection_exception(1);
+        }
+
+        header.clear();
+        header["CODE"] = "0";
+        response_constructor.post_header(header);
+    }
+
+    void ServerRunner::process_request(int descriptor) {
+        int type;
+        this->connections_mutex.lock();
+        type = this->connections[descriptor].type;
+        this->connections_mutex.unlock();
+
+        process_unassigned(descriptor);
+
+        // switch (type) {
+        //     case 0:
+        //         process_unassigned(descriptor);
+        //         break;
+        // }
+    }
 
     void ServerRunner::handle_connection(epoll_event event) {
-        char buffer[256];
-        int bytes_read;
         bool client;
 
-        this->clients_mutex.lock();
-        client = (this->clients.count(event.data.fd)) == 1 ? true : false;
-        this->clients_mutex.unlock();
+        this->connections_mutex.lock();
+        client = (this->connections.count(event.data.fd)) == 1 ? true : false;
+        this->connections_mutex.unlock();
 
         if (client) {
-            switch (bytes_read = read(event.data.fd, buffer, 255)) {
-                case -1:
-                    throw server_exception("Client read error");
-                    break;
-                case 0:
-                    this->close_connection(event.data.fd);
-                    return;
-                default:
-                    buffer[bytes_read] = 0;
-                    std::cout << "Received " << buffer << std::endl;
+            try {
+                this->process_request(event.data.fd);
+            }
+            catch (const err::connection_exception& err) {
+                this->close_connection(event.data.fd, err.get_code());
+                return;
             }
         }
         else if (event.data.fd == this->socket_descriptor) {
             this->accept_connection();
         }
         else {
-            throw server_exception("Closed socket connection attempt");
+            throw err::server_exception("Closed socket connection attempt");
         }
 
         event.events = EPOLLIN | EPOLLONESHOT;
         if (epoll_ctl(this->epoll_descriptor, EPOLL_CTL_MOD, event.data.fd, &event) == -1) {
-            throw server_exception("Epoll addition error");
+            throw err::server_exception("Epoll addition error");
         }
     }
 
@@ -157,7 +211,7 @@ namespace mm_server::utils {
         try {
             this->handle_connection(event);
         }
-        catch (server_exception& err) {
+        catch (const err::server_exception& err) {
             std::cerr << err.what() << std::endl;
             this->running = false;
         }
@@ -167,7 +221,6 @@ namespace mm_server::utils {
         this->threads[thread_i].detach();
         this->threads_lock.unlock();
         this->threads_var.notify_one();
-
     }
 
     void ServerRunner::manage_connections() {
@@ -178,7 +231,7 @@ namespace mm_server::utils {
 
         while (this->running) {
             if ((ready_descriptors = epoll_wait(this->epoll_descriptor, events, 10, 10)) == -1) {
-                throw server_exception("Epoll wait error");
+                throw err::server_exception("Epoll wait error");
             }
 
             for (int i = 0; i < ready_descriptors; ++i) {
@@ -214,7 +267,7 @@ namespace mm_server::utils {
         this->running = true;
 
         if (listen(this->socket_descriptor, 5) == -1) {
-            throw server_exception("Server socket listen error");
+            throw err::server_exception("Server socket listen error");
         }
 
         this->manage_connections();
