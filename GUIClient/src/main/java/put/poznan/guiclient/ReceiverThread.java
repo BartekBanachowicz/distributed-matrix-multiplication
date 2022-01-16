@@ -31,6 +31,7 @@ public class ReceiverThread implements Runnable{
 
             try {
                 message = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+                System.out.println(message);
             } catch (IOException e) {
                 e.printStackTrace();
             }

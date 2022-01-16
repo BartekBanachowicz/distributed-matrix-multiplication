@@ -11,6 +11,7 @@ import javafx.scene.control.TextField;
 
 
 import java.io.IOException;
+import java.util.Objects;
 
 public class GUIClient extends Application {
     private static Stage stage;
