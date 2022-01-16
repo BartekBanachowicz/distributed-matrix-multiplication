@@ -31,9 +31,9 @@ public class ConnectionHandler {
         Thread sendThread = new Thread(sendThreadClass);
         sendThread.start();
 
-        ReceiverThread receiverThreadClass = new ReceiverThread(clientSocket, queue);
+        /*ReceiverThread receiverThreadClass = new ReceiverThread(clientSocket, queue);
         Thread receiverThread = new Thread(receiverThreadClass);
-        receiverThread.start();
+        receiverThread.start();*/
 
         StatusThread statusThreadClass = new StatusThread(queue);
         Thread statusThread = new Thread(statusThreadClass);

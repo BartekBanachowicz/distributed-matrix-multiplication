@@ -30,8 +30,9 @@ public class ReceiverThread implements Runnable{
         while(continueProcessing){
 
             try {
+                //System.out.println("Receiver ready");
                 message = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
-                System.out.println(message);
+                System.out.println("Done");
             } catch (IOException e) {
                 e.printStackTrace();
             }

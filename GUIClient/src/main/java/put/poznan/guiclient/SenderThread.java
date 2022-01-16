@@ -4,6 +4,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.Base64;
 import java.util.concurrent.BlockingQueue;
 
 public class SenderThread implements Runnable{
@@ -25,7 +28,13 @@ public class SenderThread implements Runnable{
 
         String[] message = new String[0];
 
-        while(continueProcessing){
+        try {
+            outputStream.write("POST REGISTER;TYPE CLIENT\n".getBytes());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        while(continueProcessing) {
 
             try {
                 message = queue.take();
@@ -33,19 +42,26 @@ public class SenderThread implements Runnable{
                 e.printStackTrace();
             }
 
-            if(message[0].contains("GET")){
+            if (message[0].contains("GET")) {
+                try {
+                    outputStream.write(message[0].getBytes());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            } else if (message[0].contains("POST")) {
                 try {
                     outputStream.write(message[0].getBytes());
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
-            else if(message[0].contains("POST")){
-                try {
-                    outputStream.write(message[0].getBytes());
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+
+            byte[] buffer = new byte[20000];
+            try {
+                int validData = inputStream.read(buffer);
+                System.out.println(new String(buffer, 0, validData-1, StandardCharsets.UTF_8));
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         }
 
