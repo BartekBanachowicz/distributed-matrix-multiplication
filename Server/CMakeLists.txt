@@ -8,19 +8,23 @@ add_executable(mm_server
     src/ServerRunner.cpp
 
     include/err/server_exception.hpp
+    include/err/request_exception.hpp
     include/err/connection_exception.hpp
     src/err/server_exception.cpp
+    src/err/request_exception.cpp
     src/err/connection_exception.cpp
 
-    include/utils/RequestParser.hpp
-    include/utils/ResponseConstructor.hpp
-    include/utils/Connection.hpp
-    include/utils/ValueIdentifier.hpp
-    include/utils/Value.hpp
-    include/utils/Type.hpp
-    src/utils/RequestParser.cpp
-    src/utils/ResponseConstructor.cpp
-    src/utils/ValueIdentifier.cpp
+    include/rqst/RequestParser.hpp
+    include/rqst/ResponseConstructor.hpp
+    include/rqst/RequestIdentifier.hpp
+    include/rqst/Value.hpp
+    include/rqst/Key.hpp
+    src/rqst/RequestParser.cpp
+    src/rqst/ResponseConstructor.cpp
+    src/rqst/RequestIdentifier.cpp
+
+    include/conn/Connection.hpp
+    include/conn/Type.hpp
 
     include/proc/Processor.hpp
     src/proc/Processor.cpp

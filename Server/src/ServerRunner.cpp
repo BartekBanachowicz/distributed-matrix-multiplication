@@ -1,7 +1,5 @@
 #include <iostream>
-#include <stdexcept>
 #include <exception>
-#include <system_error>
 #include <map>
 #include <string>
 #include <cstring>
@@ -11,12 +9,13 @@
 #include <arpa/inet.h>
 
 #include <ServerRunner.hpp>
-#include <utils/RequestParser.hpp>
-#include <utils/ResponseConstructor.hpp>
-#include <utils/Value.hpp>
-#include <utils/Type.hpp>
+#include <conn/Type.hpp>
 #include <err/server_exception.hpp>
+#include <err/request_exception.hpp>
 #include <err/connection_exception.hpp>
+#include <rqst/Key.hpp>
+#include <rqst/RequestParser.hpp>
+#include <rqst/ResponseConstructor.hpp>
 
 
 namespace mm_server {
@@ -67,7 +66,7 @@ namespace mm_server {
             throw err::server_exception("Server socket option set error (SO_REUSEADDR)");
         }
 
-        if (bind(this->socket_descriptor, (sockaddr*)&address, sizeof(sockaddr)) == -1) {
+        if (bind(this->socket_descriptor, (sockaddr*)(&address), sizeof(sockaddr_in)) == -1) {
             throw err::server_exception("Server socket bind error");
         }
 
@@ -94,19 +93,19 @@ namespace mm_server {
     }
 
     void ServerRunner::accept_connection() {
-        char buffer[30];
-        sockaddr address;
-        socklen_t length = sizeof(sockaddr);
-        utils::Connection connection;
+        char buffer[INET6_ADDRSTRLEN];
+        sockaddr_in address;
+        socklen_t length = sizeof(sockaddr_in);
+        conn::Connection connection;
         epoll_event event;
 
-        if ((event.data.fd = accept(this->socket_descriptor, &address, &length)) == -1) {
+        if ((event.data.fd = accept(this->socket_descriptor,(sockaddr*)(&address), &length)) == -1) {
             throw err::server_exception("Client connection error");
         }
 
         event.events = EPOLLIN | EPOLLONESHOT;
 
-        if (inet_ntop(AF_INET, &address.sa_data, buffer, 30) == nullptr) {
+        if (inet_ntop(address.sin_family, &address.sin_addr, buffer, INET6_ADDRSTRLEN) == nullptr) {
             throw err::server_exception("Client address read error");
         }
 
@@ -136,7 +135,7 @@ namespace mm_server {
 
         try {
             if (this->value_identifier.at(header.at("POST"), value) != utils::Value::enter) {
-                throw err::connection_exception(1);
+                throw err::request_exception(1);
             }
 
             switch (this->value_identifier.at(header.at("TYPE"), value)) {
@@ -155,14 +154,14 @@ namespace mm_server {
                     this->connections_mutex.unlock();
                     break;
                 default:
-                    throw err::connection_exception(1);
+                    throw err::request_exception(1);
             }
         }
         catch (const std::out_of_range&) {
-            throw err::connection_exception(1);
+            throw err::request_exception(1);
         }
 
-        if (server_busy) { throw err::connection_exception(2); }
+        if (server_busy) { throw err::request_exception(2); }
 
         header.clear();
         header["CODE"] = "0";
@@ -215,7 +214,7 @@ namespace mm_server {
 
                         this->connections_mutex.unlock();
                         // UNCOMMENT WHEN UNIT READY
-                        // if (!units_ready) { throw err::connection_exception(13); }
+                        // if (!units_ready) { throw err::request_exception(13); }
 
                         this->processor.run();
                         break;
@@ -224,11 +223,40 @@ namespace mm_server {
                 response_constructor.post_header(response_header);
             }
             else {
-                throw err::connection_exception(1);
+                throw err::request_exception(1);
             }
         }
         catch (const std::out_of_range&) {
-            throw err::connection_exception(1);
+            throw err::request_exception(1);
+        }
+    }
+
+    void ServerRunner::get_handler(
+        rqst::Value request_value,
+        std::map<std::string, std::string>& header,
+        std::vector<std::vector<std::string>>& content
+    ) {
+        switch (request_value) {
+            case rqst::Value::status:
+                this->connections_mutex.lock();
+                for (const auto& [key, value] : this->connections) {
+                    if (value.type == utils::Type::unit) {
+                        content.push_back(std::vector<std::string>{value.address});
+                    }
+                }
+
+                this->connections_mutex.unlock();
+                header["STATUS"] = this->processor.get_status();
+                header["UNITS"] = std::to_string(content.size());
+                break;
+            case rqst::Value::update_new:
+                content = this->processor.get_update();
+                header["RESULTS"] = std::to_string(content.size());
+                break;
+            case rqst::Value::update_full:
+                // NOT IMPLEMENTED
+                throw err::request_exception(8);
+                break;
         }
     }
 
@@ -237,14 +265,42 @@ namespace mm_server {
         this->connections_mutex.lock();
         type = this->connections[descriptor].type;
         this->connections_mutex.unlock();
-        switch (type) {
-            case utils::Type::unassigned:
-                this->process_unassigned(descriptor);
-                break;
-            case utils::Type::client:
-                this->process_client(descriptor);
-                break;
+
+        rqst::RequestParser request_parser(descriptor);
+        rqst::ResponseConstructor response_constructor(descriptor);
+        std::map<std::string, std::string> header;
+        std::vector<std::vector<std::string>> content;
+
+        try {
+            header = request_parser.get_header();
+            if (header.size() != 1) {
+                throw err::request_exception(1);
+            }
+
+            rqst::Key request_key = this->request_identifier.key_at(header.begin()->first);
+            rqst::Value request_value = this->request_identifier.value_at(request_key, header.begin()->second);
+            header.clear();
+            header["CODE"] = "0";
+            switch (key) {
+                case rqst::Key::get:
+                    this->get_handler(request_value, header, content);
+                    break;
+                case rqst::Key::put:
+                    this->put_handler(request_value);
+                    break;
+                case rqst::Key::post:
+                    this->post_handler(request_value, request_parser.get_content());
+                    break;
+            }
         }
+        catch (const err::request_exception& err) {
+            header.clear();
+            content.clear();
+            header["CODE"] = std::to_string(err.get_code());
+        }
+
+        response_constructor.post_header(header);
+        response_constructor.post_content(header);
     }
 
     void ServerRunner::handle_connection(epoll_event event) {
@@ -258,16 +314,9 @@ namespace mm_server {
             try {
                 this->process_request(event.data.fd);
             }
-            catch (const err::connection_exception& err) {
-                if (err.get_code() == 0) {
-                    this->close_connection(event.data.fd);
-                    return;
-                }
-
-                utils::ResponseConstructor response_constructor(event.data.fd);
-                std::map<std::string, std::string> header;
-                header["CODE"] = std::to_string(err.get_code());
-                response_constructor.post_header(header);
+            catch (const err::connection_exception&) {
+                this->close_connection(event.data.fd);
+                return;
             }
         }
         else if (event.data.fd == this->socket_descriptor) {

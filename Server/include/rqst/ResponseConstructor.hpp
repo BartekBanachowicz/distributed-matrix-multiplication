@@ -10,7 +10,7 @@ namespace mm_server::utils {
         public:
             ResponseConstructor(int descriptor);
             void post_header(const std::map<std::string, std::string>& header);
-            void post_content(const std::vector<std::string>& content, int line_size);
+            void post_content(const std::vector<std::vector<std::string>>& content);
 
         private:
             int descriptor;

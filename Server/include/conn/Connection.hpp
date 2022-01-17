@@ -5,7 +5,7 @@
 #include <utils/Type.hpp>
 
 
-namespace mm_server::utils {
+namespace mm_server::conn {
     struct Connection {
         Type type = Type::unassigned;
         std::string address;

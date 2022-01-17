@@ -5,17 +5,17 @@
 #include <string>
 
 
-namespace mm_server::utils {
+namespace mm_server::rqst {
     class RequestParser {
         public:
             RequestParser(int descriptor);
             std::map<std::string, std::string> get_header();
-            std::vector<std::vector<double>> get_content();
+            std::vector<std::vector<std::string>> get_content();
 
         private:
             std::map<std::string, std::string> header;
-            std::vector<std::vector<double>> content;
-            std::vector<double> content_line;
+            std::vector<std::vector<std::string>> content;
+            std::vector<std::string> content_line;
             std::string key;
             std::string value;
             int descriptor;

@@ -70,10 +70,15 @@ namespace mm_server::utils {
         }
     }
 
-    void ResponseConstructor::post_content(const std::vector<std::string>& content, int line_size) {
-        this->initialize(content.size(), line_size);
-        for (const std::string& item : content) {
-            this->construct(item);
+    void ResponseConstructor::post_content(const std::vector<std::vector<std::string>>& content) {
+        if (!content.empty()) {
+            this->initialize(content.size(), content.begin()->size());
+        }
+
+        for (const std::string& row : content) {
+            for (const std::string& item : row) {
+                this->construct(item);
+            }
         }
     }
 }

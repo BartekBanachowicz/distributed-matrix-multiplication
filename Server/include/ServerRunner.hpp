@@ -10,7 +10,8 @@
 #include <sys/epoll.h>
 
 #include <utils/Connection.hpp>
-#include <utils/ValueIdentifier.hpp>
+#include <rqst/RequestIdentifier.hpp>
+#include <rqst/Value.hpp>
 #include <proc/Processor.hpp>
 
 
@@ -30,15 +31,20 @@ namespace mm_server {
             std::condition_variable threads_var;
             std::array<bool, 5> threads_idle = {true, true, true, true, true};
             std::array<std::thread, 5> threads;
-            std::map<int, utils::Connection> connections;
+            std::map<int, conn::Connection> connections;
             std::mutex connections_mutex;
-            utils::ValueIdentifier value_identifier;
+            rqst::RequestIdentifier request_identifier;
             proc::Processor processor;
 
             void accept_connection();
             void close_connection(int descriptor);
             void process_unassigned(int descriptor);
             void process_client(int descriptor);
+            void get_handler(
+                rqst::Value request_value,
+                std::map<std::string, std::string>& header,
+                std::vector<std::vector<std::string>>& content
+            );
             void process_request(int descriptor);
             void handle_connection(epoll_event event);
             void handle_connection_wrapper(epoll_event event, int thread_i);
