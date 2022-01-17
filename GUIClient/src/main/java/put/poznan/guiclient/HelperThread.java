@@ -28,6 +28,15 @@ public class HelperThread implements Runnable {
         dataHandler.addLeftMatrix();
         dataHandler.addRightMatrix();
         dataHandler.initializeResultMatrix();
+
+        String[] message = new String[2];
+        message[0] = "POST LEFT-MATRIX;SIZE "+dataHandler.getMatrixSize();
+        message[1] = dataHandler.getLeftMatrixAsString();
+        connectionHandler.writeToQueue(message);
+
+        message[0] = "POST RIGHT-MATRIX;SIZE "+dataHandler.getMatrixSize();
+        message[1] = dataHandler.getRightMatrixAsString();
+        connectionHandler.writeToQueue(message);
     }
 
     @Override

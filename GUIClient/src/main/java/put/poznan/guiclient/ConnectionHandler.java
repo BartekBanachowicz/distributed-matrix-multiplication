@@ -8,12 +8,17 @@ import java.util.concurrent.BlockingQueue;
 public class ConnectionHandler {
     private int portNumber;
     private String IPAddress;
-    private BlockingQueue<String[]> queue = new ArrayBlockingQueue<String[]>(20);
+    private BlockingQueue<String[]> sendQueue = new ArrayBlockingQueue<String[]>(20);
 
     public void setConnectionParams(int xPortNumber, String xIPAddress){
         this.portNumber = xPortNumber;
         this.IPAddress = xIPAddress;
     }
+
+    public void writeToQueue(String[] message){
+        sendQueue.add(message);
+    }
+
 
     public int getPortNumber() {
         return portNumber;
@@ -27,15 +32,11 @@ public class ConnectionHandler {
         System.out.println("Setting up connection to: "+getIPAddress()+":"+getPortNumber());
         Socket clientSocket = new Socket(this.IPAddress, this.portNumber);
 
-        SenderThread sendThreadClass = new SenderThread(clientSocket, queue);
-        Thread sendThread = new Thread(sendThreadClass);
-        sendThread.start();
+        ConnectionThread connThreadClass = new ConnectionThread(clientSocket, sendQueue);
+        Thread connThread = new Thread(connThreadClass);
+        connThread.start();
 
-        /*ReceiverThread receiverThreadClass = new ReceiverThread(clientSocket, queue);
-        Thread receiverThread = new Thread(receiverThreadClass);
-        receiverThread.start();*/
-
-        StatusThread statusThreadClass = new StatusThread(queue);
+        StatusThread statusThreadClass = new StatusThread(sendQueue);
         Thread statusThread = new Thread(statusThreadClass);
         statusThread.start();
     }

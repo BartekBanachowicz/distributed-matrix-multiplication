@@ -57,6 +57,9 @@ public class GUIClientController {
     private Button generateButton;
 
     @FXML
+    private Button startProcessingButton;
+
+    @FXML
     protected void onHelloButtonClick() {
         welcomeText.setText("Welcome to JavaFX Application!");
     }
@@ -73,6 +76,20 @@ public class GUIClientController {
         }
         else{
             serverAddressField.setStyle("-fx-border-color: #bb3e03");
+        }
+    }
+
+    @FXML
+    protected void onStartProcessingButtonClick(){
+        if(dataHandler.getLeftMatrixPath() != null
+                && (new File(String.valueOf(dataHandler.getLeftMatrixPath())).exists())
+                && (dataHandler.getRightMatrixPath() != null)
+                && (new File(String.valueOf(dataHandler.getRightMatrixPath())).exists())
+                && (dataHandler.getResultMatrixPath() != null))
+        {
+            HelperThread helperThreadClass = new HelperThread(dataHandler, connectionHandler, "START");
+            Thread helperThread = new Thread(helperThreadClass);
+            helperThread.start();
         }
     }
 

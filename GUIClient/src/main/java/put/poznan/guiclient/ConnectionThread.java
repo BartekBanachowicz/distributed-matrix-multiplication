@@ -5,18 +5,16 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.Base64;
 import java.util.concurrent.BlockingQueue;
 
-public class SenderThread implements Runnable{
+public class ConnectionThread implements Runnable{
     private Socket clientSocket;
     public BlockingQueue<String[]> queue;
     private Boolean continueProcessing = true;
     private InputStream inputStream;
     private OutputStream outputStream;
 
-    SenderThread(Socket xClientSocket, BlockingQueue<String[]> xQueue) throws IOException {
+    ConnectionThread(Socket xClientSocket, BlockingQueue<String[]> xQueue) throws IOException {
         this.clientSocket = xClientSocket;
         this.queue = xQueue;
         this.inputStream = this.clientSocket.getInputStream();
@@ -51,6 +49,7 @@ public class SenderThread implements Runnable{
             } else if (message[0].contains("POST")) {
                 try {
                     outputStream.write(message[0].getBytes());
+                    outputStream.write(message[1].getBytes());
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

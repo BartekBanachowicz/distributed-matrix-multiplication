@@ -6,7 +6,7 @@ import java.util.concurrent.BlockingQueue;
 public class StatusThread implements Runnable {
     private BlockingQueue<String[]> queue;
     private Boolean continueProcessing = true;
-    private SenderThread commThread;
+    private ConnectionThread commThread;
 
     StatusThread(BlockingQueue<String[]> xQueue) throws IOException {
         this.queue = xQueue;

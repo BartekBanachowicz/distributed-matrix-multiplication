@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Random;
 import java.util.Scanner;
 
@@ -66,6 +67,36 @@ public class DataHandler {
 
     public double[][] getRightMatrix() {
         return rightMatrix;
+    }
+
+    public String getLeftMatrixAsString(){
+        StringBuilder builder = new StringBuilder();
+        for(int i=0; i<matrixSize; i++){
+            builder.append(Arrays.toString(leftMatrix[i]));
+            builder.append(";");
+        }
+        return builder.toString();
+    }
+
+    public String getRightMatrixAsString(){
+        StringBuilder builder = new StringBuilder();
+        for(int i=0; i<matrixSize; i++){
+            builder.append(Arrays.toString(rightMatrix[i]));
+            builder.append(";");
+        }
+        return builder.toString();
+    }
+
+    public int getMatrixSize() {
+        return matrixSize;
+    }
+
+    public Path getLeftMatrixPath() {
+        return leftMatrixPath;
+    }
+
+    public Path getRightMatrixPath() {
+        return rightMatrixPath;
     }
 
     public void generateMatrixToFile() throws FileNotFoundException {
