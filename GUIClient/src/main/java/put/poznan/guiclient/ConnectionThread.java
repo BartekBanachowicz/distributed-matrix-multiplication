@@ -48,6 +48,8 @@ public class ConnectionThread implements Runnable{
                 }
             } else if (message[0].contains("POST")) {
                 try {
+                    System.out.println(message[0]);
+                    System.out.println(message[1]);
                     outputStream.write(message[0].getBytes());
                     outputStream.write(message[1].getBytes());
                 } catch (IOException e) {

@@ -29,14 +29,23 @@ public class HelperThread implements Runnable {
         dataHandler.addRightMatrix();
         dataHandler.initializeResultMatrix();
 
-        String[] message = new String[2];
-        message[0] = "POST LEFT-MATRIX;SIZE "+dataHandler.getMatrixSize();
-        message[1] = dataHandler.getLeftMatrixAsString();
-        connectionHandler.writeToQueue(message);
+        String[] messageLeft = new String[2];
+        messageLeft[0] = "POST LEFT-MATRIX\n";
+        messageLeft[1] = dataHandler.getLeftMatrixAsString();
+        System.out.println(messageLeft[0]);
+        System.out.println(messageLeft[1]);
+        connectionHandler.writeToQueue(messageLeft);
 
-        message[0] = "POST RIGHT-MATRIX;SIZE "+dataHandler.getMatrixSize();
-        message[1] = dataHandler.getRightMatrixAsString();
-        connectionHandler.writeToQueue(message);
+        System.out.println("Left sent");
+
+        String[] messageRight = new String[2];
+        messageRight[0] = "POST RIGHT-MATRIX\n";
+        messageRight[1] = dataHandler.getRightMatrixAsString();
+        System.out.println(messageRight[0]);
+        System.out.println(messageRight[1]);
+        connectionHandler.writeToQueue(messageRight);
+
+        System.out.println("Right sent");
     }
 
     @Override
@@ -59,7 +68,9 @@ public class HelperThread implements Runnable {
                             } catch (FileNotFoundException e) {
                                 e.printStackTrace();
                             }
+                            break;
             case "GENERATE":
+                            System.out.println("What am I doing here?");
                             try {
                                 this.generateData();
                             } catch (FileNotFoundException e) {

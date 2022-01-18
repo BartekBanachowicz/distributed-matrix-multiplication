@@ -36,9 +36,9 @@ public class ConnectionHandler {
         Thread connThread = new Thread(connThreadClass);
         connThread.start();
 
-        StatusThread statusThreadClass = new StatusThread(sendQueue);
+        /*StatusThread statusThreadClass = new StatusThread(sendQueue);
         Thread statusThread = new Thread(statusThreadClass);
-        statusThread.start();
+        statusThread.start();*/
     }
 
 }

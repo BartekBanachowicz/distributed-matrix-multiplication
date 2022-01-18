@@ -4,10 +4,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Random;
-import java.util.Scanner;
+import java.util.*;
 
 import static java.lang.Math.random;
 import static java.lang.Math.sqrt;
@@ -27,11 +24,13 @@ public class DataHandler {
     public double[][] loadMatrixFromFile(Path filePath) throws FileNotFoundException {
         Scanner scanner = new Scanner(new File(String.valueOf(filePath)));
         scanner.useDelimiter(",");
-        ArrayList<Double> buffer = new ArrayList<>();
+        ArrayList<String> buffer = new ArrayList<>();
         double[][] matrix;
+        String line;
 
-        while(scanner.hasNextDouble()){
-            buffer.add(scanner.nextDouble());
+        while(scanner.hasNextLine()){
+            line = scanner.nextLine();
+            buffer.addAll(List.of(line.split(",")));
         }
 
         if(sqrt(buffer.size())%1 == 0){
@@ -45,7 +44,7 @@ public class DataHandler {
 
         for(int i=0; i<matrixSize; i++){
             for(int j=0; j<matrixSize; j++){
-                matrix[i][j] = buffer.get(0);
+                matrix[i][j] = Double.parseDouble(buffer.get(0));
                 buffer.remove(0);
             }
         }
@@ -72,8 +71,15 @@ public class DataHandler {
     public String getLeftMatrixAsString(){
         StringBuilder builder = new StringBuilder();
         for(int i=0; i<matrixSize; i++){
-            builder.append(Arrays.toString(leftMatrix[i]));
-            builder.append(";");
+            for(int j=0; j<matrixSize; j++){
+                builder.append(leftMatrix[i][j]);
+                if(j!=matrixSize-1){
+                    builder.append(" ");
+                }
+            }
+            if(i!=matrixSize-1){
+                builder.append(";");
+            }
         }
         return builder.toString();
     }
@@ -81,8 +87,15 @@ public class DataHandler {
     public String getRightMatrixAsString(){
         StringBuilder builder = new StringBuilder();
         for(int i=0; i<matrixSize; i++){
-            builder.append(Arrays.toString(rightMatrix[i]));
-            builder.append(";");
+            for(int j=0; j<matrixSize; j++){
+                builder.append(rightMatrix[i][j]);
+                if(j!=matrixSize-1){
+                    builder.append(" ");
+                }
+            }
+            if(i!=matrixSize-1){
+                builder.append(";");
+            }
         }
         return builder.toString();
     }

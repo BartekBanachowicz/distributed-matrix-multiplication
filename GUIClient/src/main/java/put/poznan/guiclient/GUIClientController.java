@@ -81,12 +81,15 @@ public class GUIClientController {
 
     @FXML
     protected void onStartProcessingButtonClick(){
+        System.out.println("Start button clicked");
+        System.out.println(dataHandler.getLeftMatrixPath()+" "+dataHandler.getRightMatrixPath()+" "+dataHandler.getResultMatrixPath());
         if(dataHandler.getLeftMatrixPath() != null
                 && (new File(String.valueOf(dataHandler.getLeftMatrixPath())).exists())
                 && (dataHandler.getRightMatrixPath() != null)
                 && (new File(String.valueOf(dataHandler.getRightMatrixPath())).exists())
                 && (dataHandler.getResultMatrixPath() != null))
         {
+            System.out.println("Start thread created");
             HelperThread helperThreadClass = new HelperThread(dataHandler, connectionHandler, "START");
             Thread helperThread = new Thread(helperThreadClass);
             helperThread.start();
@@ -141,9 +144,8 @@ public class GUIClientController {
         );
         try{
             File file = fileChooser.showOpenDialog(GUIClient.getStage());
-            if(file.exists()){
-                leftMatrixDirectory.setText(file.getAbsolutePath());
-            }
+            leftMatrixDirectory.setText(file.getAbsolutePath());
+            dataHandler.setLeftMatrixPath(Path.of(file.getAbsolutePath()));
         }catch(NullPointerException exception){
             System.out.println("NullPointerException: Did not choose file.");
         }
@@ -160,6 +162,7 @@ public class GUIClientController {
             File file = fileChooser.showOpenDialog(GUIClient.getStage());
             if(file.exists()){
                 rightMatrixDirectory.setText(file.getAbsolutePath());
+                dataHandler.setRightMatrixPath(Path.of(file.getAbsolutePath()));
             }
         }catch(NullPointerException exception){
             System.out.println("NullPointerException: Did not choose file.");
@@ -176,6 +179,7 @@ public class GUIClientController {
         try{
             File file = fileChooser.showSaveDialog(GUIClient.getStage());
             resultMatrixDirectory.setText(file.getAbsolutePath());
+            dataHandler.setResultMatrixPath(Path.of(file.getAbsolutePath()));
         }catch(NullPointerException exception){
             System.out.println("NullPointerException: Did not choose file.");
         }
