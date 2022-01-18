@@ -2,7 +2,7 @@
 
 #include <string>
 
-#include <utils/Type.hpp>
+#include <conn/Type.hpp>
 
 
 namespace mm_server::conn {

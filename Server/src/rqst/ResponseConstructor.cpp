@@ -1,11 +1,11 @@
 #include <algorithm>
 #include <unistd.h>
 
-#include <utils/ResponseConstructor.hpp>
+#include <rqst/ResponseConstructor.hpp>
 #include <err/server_exception.hpp>
 
 
-namespace mm_server::utils {
+namespace mm_server::rqst {
     ResponseConstructor::ResponseConstructor(int descriptor) : descriptor(descriptor) {}
 
     void ResponseConstructor::initialize(int x, int y) {
@@ -19,7 +19,7 @@ namespace mm_server::utils {
 
     void ResponseConstructor::post() {
         int bytes;
-        while (this->bytes_sent < this->buffer.size()) {
+        while (this->bytes_sent < static_cast<int>(this->buffer.size())) {
             if ((bytes = write(
                 this->descriptor,
                 this->buffer.c_str() + this->bytes_sent,
@@ -75,7 +75,7 @@ namespace mm_server::utils {
             this->initialize(content.size(), content.begin()->size());
         }
 
-        for (const std::string& row : content) {
+        for (const std::vector<std::string>& row : content) {
             for (const std::string& item : row) {
                 this->construct(item);
             }

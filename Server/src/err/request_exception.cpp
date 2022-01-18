@@ -4,7 +4,7 @@
 
 
 namespace mm_server::err {
-    connection_exception::request_exception(int code) {
+    request_exception::request_exception(int code) {
         this->code = code;
     }
 

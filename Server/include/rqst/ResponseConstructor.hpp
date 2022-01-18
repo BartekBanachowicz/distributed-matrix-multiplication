@@ -5,7 +5,7 @@
 #include <vector>
 
 
-namespace mm_server::utils {
+namespace mm_server::rqst {
     class ResponseConstructor {
         public:
             ResponseConstructor(int descriptor);

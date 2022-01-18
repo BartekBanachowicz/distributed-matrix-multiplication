@@ -9,7 +9,7 @@
 
 #include <sys/epoll.h>
 
-#include <utils/Connection.hpp>
+#include <conn/Connection.hpp>
 #include <rqst/RequestIdentifier.hpp>
 #include <rqst/Value.hpp>
 #include <proc/Processor.hpp>
@@ -38,12 +38,19 @@ namespace mm_server {
 
             void accept_connection();
             void close_connection(int descriptor);
-            void process_unassigned(int descriptor);
-            void process_client(int descriptor);
             void get_handler(
+                int descriptor,
+                conn::Type connection_type,
                 rqst::Value request_value,
                 std::map<std::string, std::string>& header,
                 std::vector<std::vector<std::string>>& content
+            );
+            void put_handler(int descriptor, conn::Type connection_type, rqst::Value request_value);
+            void post_handler(
+                int descriptor,
+                conn::Type connection_type,
+                rqst::Value request_value,
+                std::vector<std::vector<std::string>> content
             );
             void process_request(int descriptor);
             void handle_connection(epoll_event event);
