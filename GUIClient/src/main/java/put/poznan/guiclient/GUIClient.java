@@ -5,6 +5,9 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
+import javafx.scene.paint.Paint;
+import javafx.scene.shape.Circle;
+import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.scene.control.TextField;
@@ -17,6 +20,18 @@ public class GUIClient extends Application {
     private static Stage stage;
     private static DataHandler dataHandler = new DataHandler();
     private static ConnectionHandler connectionHandler = new ConnectionHandler();
+
+    @FXML
+    private Text serverStatusText;
+
+    @FXML
+    private Circle serverStatusDiode;
+
+    @FXML
+    public void setConnected(){
+        serverStatusDiode.setFill(Paint.valueOf("#1f4862"));
+        serverStatusText.setText("Connected");
+    }
 
     @Override
     public void start(Stage xStage) throws IOException {

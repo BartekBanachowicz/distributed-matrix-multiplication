@@ -4,6 +4,9 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.paint.Paint;
+import javafx.scene.shape.Circle;
+import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
 
 import java.awt.*;
@@ -60,8 +63,21 @@ public class GUIClientController {
     private Button startProcessingButton;
 
     @FXML
+    private Text serverStatusText;
+
+    @FXML
+    private Circle serverStatusDiode;
+
+    @FXML
     protected void onHelloButtonClick() {
         welcomeText.setText("Welcome to JavaFX Application!");
+    }
+
+    @FXML
+    public void setConnected(){
+        //serverStatusDiode.setFill(Paint.valueOf("#1f4862"));
+        //serverStatusText.setText("Connected");
+        serverAddressField.setText("xd");
     }
 
     @FXML
@@ -70,7 +86,7 @@ public class GUIClientController {
             String[] address = serverAddressField.getText().split(":");
             connectionHandler.setConnectionParams(Integer.parseInt(address[1]), address[0]);
 
-            HelperThread helperThreadClass = new HelperThread(dataHandler, connectionHandler, "CONNECT");
+            HelperThread helperThreadClass = new HelperThread(dataHandler, connectionHandler, "CONNECT", this);
             Thread helperThread = new Thread(helperThreadClass);
             helperThread.start();
         }
@@ -90,7 +106,7 @@ public class GUIClientController {
                 && (dataHandler.getResultMatrixPath() != null))
         {
             System.out.println("Start thread created");
-            HelperThread helperThreadClass = new HelperThread(dataHandler, connectionHandler, "START");
+            HelperThread helperThreadClass = new HelperThread(dataHandler, connectionHandler, "START", this);
             Thread helperThread = new Thread(helperThreadClass);
             helperThread.start();
         }
@@ -129,7 +145,7 @@ public class GUIClientController {
             }
         }
 
-        HelperThread helperThreadClass = new HelperThread(dataHandler, connectionHandler, "GENERATE");
+        HelperThread helperThreadClass = new HelperThread(dataHandler, connectionHandler, "GENERATE", this);
         Thread helperThread = new Thread(helperThreadClass);
         helperThread.start();
 

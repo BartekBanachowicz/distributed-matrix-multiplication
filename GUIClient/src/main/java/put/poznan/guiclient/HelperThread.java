@@ -7,11 +7,13 @@ public class HelperThread implements Runnable {
     private DataHandler dataHandler;
     private ConnectionHandler connectionHandler;
     private String operation;
+    private GUIClientController controller;
 
-    HelperThread(DataHandler xDataHandler, ConnectionHandler xConnectionHandler, String xOperation){
+    HelperThread(DataHandler xDataHandler, ConnectionHandler xConnectionHandler, String xOperation, GUIClientController controller){
         this.dataHandler = xDataHandler;
         this.connectionHandler = xConnectionHandler;
         this.operation = xOperation;
+        this.controller = controller;
     }
 
     private void collectData(){}
@@ -31,7 +33,7 @@ public class HelperThread implements Runnable {
 
         String[] messageLeft = new String[2];
         messageLeft[0] = "POST LEFT-MATRIX\n";
-        messageLeft[1] = dataHandler.getLeftMatrixAsString();
+        messageLeft[1] = dataHandler.getLeftMatrixAsString()+"\n";
         System.out.println(messageLeft[0]);
         System.out.println(messageLeft[1]);
         connectionHandler.writeToQueue(messageLeft);
@@ -40,7 +42,7 @@ public class HelperThread implements Runnable {
 
         String[] messageRight = new String[2];
         messageRight[0] = "POST RIGHT-MATRIX\n";
-        messageRight[1] = dataHandler.getRightMatrixAsString();
+        messageRight[1] = dataHandler.getRightMatrixAsString()+"\n";
         System.out.println(messageRight[0]);
         System.out.println(messageRight[1]);
         connectionHandler.writeToQueue(messageRight);
