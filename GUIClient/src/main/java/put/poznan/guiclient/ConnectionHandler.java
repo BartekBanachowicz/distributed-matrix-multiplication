@@ -21,7 +21,6 @@ public class ConnectionHandler {
         sendQueue.add(message);
     }
 
-
     public int getPortNumber() {
         return portNumber;
     }
@@ -41,6 +40,12 @@ public class ConnectionHandler {
         StatusThread statusThreadClass = new StatusThread(sendQueue, statusQueue);
         Thread statusThread = new Thread(statusThreadClass);
         statusThread.start();
+    }
+
+    public void readServerData(DataHandler dataHandler) throws IOException {
+        ReceiverThread recThreadClass = new ReceiverThread(sendQueue, dataQueue, dataHandler);
+        Thread recThread = new Thread(recThreadClass);
+        recThread.start();
     }
 
 }

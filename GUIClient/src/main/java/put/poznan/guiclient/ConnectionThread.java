@@ -8,13 +8,13 @@ import java.nio.charset.StandardCharsets;
 import java.util.concurrent.BlockingQueue;
 
 public class ConnectionThread implements Runnable{
-    private Socket clientSocket;
-    private BlockingQueue<String[]> sendQueue;
-    private BlockingQueue<String> statusQueue;
-    private BlockingQueue<String> dataQueue;
+    private final Socket clientSocket;
+    private final BlockingQueue<String[]> sendQueue;
+    private final BlockingQueue<String> statusQueue;
+    private final BlockingQueue<String> dataQueue;
     private Boolean continueProcessing = true;
-    private InputStream inputStream;
-    private OutputStream outputStream;
+    private final InputStream inputStream;
+    private final OutputStream outputStream;
 
     ConnectionThread(Socket xClientSocket, BlockingQueue<String[]> sendQueue, BlockingQueue<String> statusQueue,
                      BlockingQueue<String> dataQueue) throws IOException {
@@ -26,32 +26,104 @@ public class ConnectionThread implements Runnable{
         this.outputStream = this.clientSocket.getOutputStream();
     }
 
-    @Override
-    public void run() {
+    private void handleErrors(String message){
 
-        String[] message = new String[0];
+    }
+
+    private void makeUpConnection(){
         byte[] buffer = new byte[200000];
-        int validData = 0;
+        int validData;
         String received = "";
 
+        GUIClient.getAdapter().setConnecting();
+
         try {
-            outputStream.write("POST REGISTER;TYPE CLIENT\n".getBytes());
+            outputStream.write("POST REGISTER-CLIENT\n".getBytes());
             validData = inputStream.read(buffer);
-            statusQueue.put(received = new String(buffer, 0, validData-1, StandardCharsets.UTF_8));
-        } catch (IOException | InterruptedException e) {
+            received = new String(buffer, 0, validData-1, StandardCharsets.UTF_8);
+        } catch (IOException e) {
             e.printStackTrace();
         }
 
         if(received.contains("CODE 0")){
-            GUIConverter.setConnected();
+            GUIClient.getAdapter().setConnected();
         }
+    }
 
+    private void getStatus(String[] message){
+        byte[] buffer = new byte[200000];
+        int validData;
+        String received;
+
+        try {
+            outputStream.write(message[0].getBytes());
+            validData = inputStream.read(buffer);
+            received = new String(buffer, 0, validData-1, StandardCharsets.UTF_8);
+            System.out.println(received);
+
+            if(!received.contains("STATUS")){
+                handleErrors(received);
+            } else {
+                statusQueue.put(received);
+            }
+
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void postMatrix(String[] message){
+        byte[] buffer = new byte[200000];
+        int validData;
+        String received;
+
+        try {
+            System.out.println(message[0]);
+            System.out.println(message[1]);
+            outputStream.write(message[0].getBytes());
+            outputStream.write(message[1].getBytes());
+
+            validData = inputStream.read(buffer);
+            received = new String(buffer, 0, validData-1, StandardCharsets.UTF_8);
+
+            if(!received.matches("CODE 0")){
+                handleErrors(received);
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void getUpdate(String[] message){
+        byte[] buffer = new byte[200000];
+        int validData;
+        String received;
+
+        try {
+            outputStream.write(message[0].getBytes());
+            validData = inputStream.read(buffer);
+            received = new String(buffer, 0, validData-1, StandardCharsets.UTF_8);
+
+            if(!received.contains("RESULTS")){
+                handleErrors(received);
+            } else {
+                dataQueue.put(received);
+            }
+
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void run() {
+
+        String[] message = new String[0];
+
+        makeUpConnection();
 
         while(continueProcessing) {
-
-            buffer = new byte[200000];
-            validData = 0;
-            received = "";
 
             try {
                 message = sendQueue.take();
@@ -60,30 +132,13 @@ public class ConnectionThread implements Runnable{
             }
 
             if (message[0].contains("GET STATUS")) {
-                try {
-                    outputStream.write(message[0].getBytes());
-                    validData = inputStream.read(buffer);
-                    statusQueue.put(received = new String(buffer, 0, validData-1, StandardCharsets.UTF_8));
-                } catch (IOException | InterruptedException e) {
-                    e.printStackTrace();
-                }
-            } else if (message[0].contains("POST")) {
-                try {
-                    System.out.println(message[0]);
-                    System.out.println(message[1]);
-                    outputStream.write(message[0].getBytes());
-                    outputStream.write(message[1].getBytes());
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                getStatus(message);
             }
-
-
-            try {
-                validData = inputStream.read(buffer);
-                System.out.println(new String(buffer, 0, validData-1, StandardCharsets.UTF_8));
-            } catch (IOException e) {
-                e.printStackTrace();
+            else if (message[0].contains("POST")) {
+                postMatrix(message);
+            }
+            else if (message[0].contains("GET UPDATE")) {
+                getUpdate(message);
             }
         }
 

@@ -1,36 +1,28 @@
 package put.poznan.guiclient;
 
 import javafx.fxml.FXML;
+import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.paint.Paint;
 import javafx.scene.shape.Circle;
 import javafx.scene.text.Text;
+import javafx.scene.control.ProgressBar;
 import javafx.stage.FileChooser;
+import javafx.scene.control.ListView;
 
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.nio.file.Path;
+import java.util.ResourceBundle;
 
-public class GUIClientController {
+public class GUIClientController implements Initializable {
     private ConnectionHandler connectionHandler = GUIClient.getConnectionHandler();
     private DataHandler dataHandler = GUIClient.getDataHandler();
-    private Desktop desktop = Desktop.getDesktop();
-
-
-    /*private EventHandler<ActionEvent> browserButtonEventHandler = new EventHandler<ActionEvent>() {
-        @Override
-        public void handle(final ActionEvent actionEvent) {
-            FileChooser fileChooser = new FileChooser();
-            fileChooser.setTitle("Open resource file");
-            fileChooser.getExtensionFilters().addAll(
-                    new FileChooser.ExtensionFilter("csv", "*.csv")
-            );
-        }
-    }*/
-
+    private final Desktop desktop = Desktop.getDesktop();
 
     @FXML
     private Label welcomeText;
@@ -69,15 +61,14 @@ public class GUIClientController {
     private Circle serverStatusDiode;
 
     @FXML
-    protected void onHelloButtonClick() {
-        welcomeText.setText("Welcome to JavaFX Application!");
-    }
+    private ProgressBar progressBar;
 
     @FXML
-    public void setConnected(){
-        //serverStatusDiode.setFill(Paint.valueOf("#1f4862"));
-        //serverStatusText.setText("Connected");
-        serverAddressField.setText("xd");
+    private ListView<String> unitsList;
+
+    @FXML
+    protected void onHelloButtonClick() {
+        welcomeText.setText("Welcome to JavaFX Application!");
     }
 
     @FXML
@@ -216,8 +207,43 @@ public class GUIClientController {
         }
     }
 
+    public void setConnected(){
+        serverStatusDiode.setFill(Paint.valueOf("#46993d"));
+        serverStatusText.setText("Connected: IDLE");
+    }
 
+    public void setConnecting(){
+        serverStatusDiode.setFill(Paint.valueOf("#376fad"));
+        serverStatusText.setText("Connecting...");
+    }
 
+    public void setReady(){
+        serverStatusDiode.setFill(Paint.valueOf("#376fad"));
+        serverStatusText.setText("Connected: Ready");
+    }
 
+    public void setRunning(){
+        serverStatusDiode.setFill(Paint.valueOf("#fa9111"));
+        serverStatusText.setText("Connected: Running");
+    }
 
+    public void setStopped(){
+        serverStatusDiode.setFill(Paint.valueOf("#d40d0d"));
+        serverStatusText.setText("Connected: Stopped");
+    }
+
+    public void setListOfUnits(String[] units){
+        for (String unit : units) {
+            unitsList.getItems().add(unit);
+        }
+    }
+
+    public void changeProgress(double progress){
+        progressBar.setProgress(progress);
+    }
+
+    @Override
+    public void initialize(URL url, ResourceBundle resourceBundle) {
+
+    }
 }

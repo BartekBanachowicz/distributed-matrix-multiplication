@@ -17,7 +17,7 @@ public class DataHandler {
     private Path rightMatrixPath;
     private Path resultMatrixPath;
     private Path newMatrixPath;
-    private int matrixSize;
+    private int matrixSize = -1;
     private int resultMatrixSize = -1;
     private int newMatrixSize = -1;
 
@@ -165,6 +165,17 @@ public class DataHandler {
 
     public void writeToResultMatrix(int x, int y, double value){
         this.resultMatrix[x][y] = value;
+    }
+
+    public double readFromResultMatrix(int x, int y){
+        return this.resultMatrix[x][y];
+    }
+
+    public void createResultMatrix(){
+        if(this.matrixSize != -1){
+            this.resultMatrixSize = this.matrixSize;
+            this.resultMatrix = new double[resultMatrixSize][resultMatrixSize];
+        }
     }
 
     public void saveMatrixToFile(Path filePath, double[][] matrix) throws FileNotFoundException {

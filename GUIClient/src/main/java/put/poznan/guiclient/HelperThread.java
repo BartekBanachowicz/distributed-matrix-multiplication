@@ -16,7 +16,9 @@ public class HelperThread implements Runnable {
         this.controller = controller;
     }
 
-    private void collectData(){}
+    private void collectData() throws IOException {
+        connectionHandler.readServerData(dataHandler);
+    }
 
     private void generateData() throws FileNotFoundException {
         dataHandler.generateMatrixToFile();
@@ -53,15 +55,13 @@ public class HelperThread implements Runnable {
     @Override
     public void run() {
         switch (this.operation){
-            case "COLLECT": this.collectData();
-                            break;
-
             case "CONNECT":
                             try {
                                 this.connectToServer();
                             } catch (IOException e) {
                                 e.printStackTrace();
                             }
+
                             break;
 
             case "START":
@@ -70,6 +70,13 @@ public class HelperThread implements Runnable {
                             } catch (FileNotFoundException e) {
                                 e.printStackTrace();
                             }
+
+                            try {
+                                this.collectData();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+
                             break;
             case "GENERATE":
                             System.out.println("What am I doing here?");

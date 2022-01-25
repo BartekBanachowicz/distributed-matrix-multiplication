@@ -29,7 +29,6 @@ public class StatusThread implements Runnable {
 
                 scanner = new Scanner(statusQueue.take());
                 scanner.useDelimiter(";");
-                receivedMessage = new String[2];
                 String line;
 
                 if(scanner.hasNextLine()){
@@ -37,6 +36,29 @@ public class StatusThread implements Runnable {
 
                     if(line.contains("STATUS")){
                         receivedMessage = line.split(";");
+
+                        if(receivedMessage[0].contains("STATUS IDLE")){
+                            GUIClient.getAdapter().setConnected();
+                        }
+                        else if(receivedMessage[0].contains("STATUS READY")){
+                            GUIClient.getAdapter().setReady();
+                        }
+                        else if(receivedMessage[0].contains("STATUS RUNNING")){
+                            GUIClient.getAdapter().setRunning();
+                        }
+                        else if(receivedMessage[0].contains("STATUS STOPPED")){
+                            GUIClient.getAdapter().setStopped();
+                        }
+
+                        if(receivedMessage.length > 1 && receivedMessage[1].split(" ")[0].matches("UNITS")
+                                && Integer.parseInt(receivedMessage[1].split(" ")[1]) > 0){
+
+                            System.out.println("Has units");
+                            if(scanner.hasNextLine()){
+                                String[] units = scanner.nextLine().split(";");
+                                GUIClient.getAdapter().setListOfUnits(units);
+                            }
+                        }
                     }
                 }
 
