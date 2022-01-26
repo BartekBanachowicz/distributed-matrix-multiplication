@@ -38,7 +38,7 @@ public class ConnectionThread implements Runnable{
         GUIClient.getAdapter().setConnecting();
 
         try {
-            outputStream.write("POST REGISTER-CLIENT\n".getBytes());
+            outputStream.write("PUT REGISTER-CLIENT\n".getBytes());
             validData = inputStream.read(buffer);
             received = new String(buffer, 0, validData-1, StandardCharsets.UTF_8);
         } catch (IOException e) {

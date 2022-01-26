@@ -218,7 +218,7 @@ public class GUIClientController implements Initializable {
     }
 
     public void setReady(){
-        serverStatusDiode.setFill(Paint.valueOf("#376fad"));
+        serverStatusDiode.setFill(Paint.valueOf("#46993d"));
         serverStatusText.setText("Connected: Ready");
     }
 

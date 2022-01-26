@@ -37,20 +37,20 @@ public class StatusThread implements Runnable {
                     if(line.contains("STATUS")){
                         receivedMessage = line.split(";");
 
-                        if(receivedMessage[0].contains("STATUS IDLE")){
+                        if(receivedMessage[1].contains("STATUS IDLE")){
                             GUIClient.getAdapter().setConnected();
                         }
-                        else if(receivedMessage[0].contains("STATUS READY")){
+                        else if(receivedMessage[1].contains("STATUS READY")){
                             GUIClient.getAdapter().setReady();
                         }
-                        else if(receivedMessage[0].contains("STATUS RUNNING")){
+                        else if(receivedMessage[1].contains("STATUS RUNNING")){
                             GUIClient.getAdapter().setRunning();
                         }
-                        else if(receivedMessage[0].contains("STATUS STOPPED")){
+                        else if(receivedMessage[1].contains("STATUS STOPPED")){
                             GUIClient.getAdapter().setStopped();
                         }
 
-                        if(receivedMessage.length > 1 && receivedMessage[1].split(" ")[0].matches("UNITS")
+                        if(receivedMessage.length > 2 && receivedMessage[1].split(" ")[0].matches("UNITS")
                                 && Integer.parseInt(receivedMessage[1].split(" ")[1]) > 0){
 
                             System.out.println("Has units");
