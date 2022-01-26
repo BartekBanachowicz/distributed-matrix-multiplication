@@ -1,5 +1,6 @@
 package put.poznan.guiclient;
 
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
@@ -233,9 +234,15 @@ public class GUIClientController implements Initializable {
     }
 
     public void setListOfUnits(String[] units){
-        for (String unit : units) {
-            unitsList.getItems().add(unit);
-        }
+        Platform.runLater(new Runnable() {
+            @Override
+            public void run() {
+                unitsList.getItems().clear();
+                for (String unit : units) {
+                    unitsList.getItems().add(unit);
+                }
+            }
+        });
     }
 
     public void changeProgress(double progress){

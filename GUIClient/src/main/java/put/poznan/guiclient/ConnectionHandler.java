@@ -9,7 +9,7 @@ public class ConnectionHandler {
     private int portNumber;
     private String IPAddress;
     private BlockingQueue<String[]> sendQueue = new ArrayBlockingQueue<String[]>(20);
-    private BlockingQueue<String> statusQueue = new ArrayBlockingQueue<String>(20);
+    private BlockingQueue<String[]> statusQueue = new ArrayBlockingQueue<String[]>(20);
     private BlockingQueue<String> dataQueue = new ArrayBlockingQueue<String>(20);
 
     public void setConnectionParams(int xPortNumber, String xIPAddress){

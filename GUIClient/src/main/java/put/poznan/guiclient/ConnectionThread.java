@@ -1,8 +1,6 @@
 package put.poznan.guiclient;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.BlockingQueue;
@@ -10,13 +8,13 @@ import java.util.concurrent.BlockingQueue;
 public class ConnectionThread implements Runnable{
     private final Socket clientSocket;
     private final BlockingQueue<String[]> sendQueue;
-    private final BlockingQueue<String> statusQueue;
+    private final BlockingQueue<String[]> statusQueue;
     private final BlockingQueue<String> dataQueue;
     private Boolean continueProcessing = true;
     private final InputStream inputStream;
     private final OutputStream outputStream;
 
-    ConnectionThread(Socket xClientSocket, BlockingQueue<String[]> sendQueue, BlockingQueue<String> statusQueue,
+    ConnectionThread(Socket xClientSocket, BlockingQueue<String[]> sendQueue, BlockingQueue<String[]> statusQueue,
                      BlockingQueue<String> dataQueue) throws IOException {
         this.clientSocket = xClientSocket;
         this.sendQueue = sendQueue;
@@ -53,18 +51,34 @@ public class ConnectionThread implements Runnable{
     private void getStatus(String[] message){
         byte[] buffer = new byte[200000];
         int validData;
-        String received;
+        String[] receivedStatus = new String[2];
+
+        BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+        PrintWriter writer = new PrintWriter(outputStream, true);
+
 
         try {
-            outputStream.write(message[0].getBytes());
+
+            writer.println(message[0]);
+            String serverMessage = reader.readLine();
+            System.out.println(serverMessage);
+
+            /*outputStream.write(message[0].getBytes());
             validData = inputStream.read(buffer);
             received = new String(buffer, 0, validData-1, StandardCharsets.UTF_8);
-            System.out.println(received);
+            System.out.println(received);*/
 
-            if(!received.contains("STATUS")){
-                handleErrors(received);
+            if(!serverMessage.contains("STATUS")){
+                handleErrors(serverMessage);
             } else {
-                statusQueue.put(received);
+                receivedStatus[0] = serverMessage;
+                if(serverMessage.matches(".+UNITS \\d+$")
+                        && Integer.parseInt(serverMessage.split(";")[2].split(" ")[1])>0){
+                    serverMessage = reader.readLine();
+                    System.out.println(serverMessage);
+                    receivedStatus[1] = serverMessage;
+                }
+                statusQueue.put(receivedStatus);
             }
 
         } catch (IOException | InterruptedException e) {
