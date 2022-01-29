@@ -3,6 +3,8 @@
 #include <map>
 #include <string>
 #include <cstring>
+#include <csignal>
+#include <tuple>
 #include <unistd.h>
 
 #include <netinet/in.h>
@@ -119,10 +121,14 @@ namespace mm_server {
     }
 
     void ServerRunner::close_connection(int descriptor) {
-        close(descriptor);
+        bool error = false;
+
+        this->processor.revoke_task(descriptor);
         this->connections_mutex.lock();
-        this->connections.erase(this->connections.find(descriptor));
+        this->connections.erase(descriptor);
+        error = close(descriptor) == -1;
         this->connections_mutex.unlock();
+        if (error) { throw err::server_exception("Connection closing error"); }
     }
 
     void ServerRunner::get_handler(
@@ -152,8 +158,13 @@ namespace mm_server {
                 break;
             case rqst::Value::update_full:
                 if (connection_type != conn::Type::client) { throw err::request_exception(4); }
-                // NOT IMPLEMENTED
-                throw err::request_exception(7);
+                content = this->processor.get_results_full();
+                header["SIZE"] = std::to_string(content.size());
+                break;
+            case rqst::Value::task:
+                if (connection_type != conn::Type::unit) { throw err::request_exception(4); }
+                content = this->processor.assign_task(descriptor);
+                header["TASKS"] = std::to_string(1);
                 break;
             default:
                 throw err::request_exception(2);
@@ -184,15 +195,9 @@ namespace mm_server {
                 this->connections[descriptor].type = conn::Type::unit;
                 this->connections_mutex.unlock();
                 break;
-            case rqst::Value::process_start:
-                if (connection_type != conn::Type::client) { throw err::request_exception(4); }
-                this->processor.run();
-                break;
             case rqst::Value::process_reset:
                 if (connection_type != conn::Type::client) { throw err::request_exception(4); }
-                this->connections_mutex.lock();
                 this->processor.reset();
-                this->connections_mutex.unlock();
                 break;
             default:
                 throw err::request_exception(2);
@@ -213,6 +218,10 @@ namespace mm_server {
             case rqst::Value::right_matrix:
                 if (connection_type != conn::Type::client) { throw err::request_exception(4); }
                 this->processor.set_right_matrix(content);
+                break;
+            case rqst::Value::result:
+                if (connection_type != conn::Type::unit) { throw err::request_exception(4); }
+                this->processor.collect_result(descriptor, content);
                 break;
             default:
                 throw err::request_exception(2);
@@ -324,7 +333,7 @@ namespace mm_server {
 
                     while (true) {
                         thread_free = false;
-                        for (thread_i = 0; thread_i < this->threads_idle.size(); ++thread_i) {
+                        for (thread_i = 0; thread_i < static_cast<int>(this->threads_idle.size()); ++thread_i) {
                             if (this->threads_idle[thread_i]) {
                                 thread_free = true;
                                 break;
@@ -349,6 +358,8 @@ namespace mm_server {
 
     void ServerRunner::run() {
         this->running = true;
+
+        std::signal(SIGPIPE, SIG_IGN);
 
         if (listen(this->socket_descriptor, 5) == -1) {
             throw err::server_exception("Server socket listen error");

@@ -21,7 +21,7 @@ namespace mm_server::rqst {
             int x_i;
             int y_i;
 
-            void initialize(int x, int y);
+            void initialize();
             void construct(const std::string& value);
             void post();
 

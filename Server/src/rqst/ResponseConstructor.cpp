@@ -3,18 +3,19 @@
 
 #include <rqst/ResponseConstructor.hpp>
 #include <err/server_exception.hpp>
+#include <err/connection_exception.hpp>
 
 
 namespace mm_server::rqst {
     ResponseConstructor::ResponseConstructor(int descriptor) : descriptor(descriptor) {}
 
-    void ResponseConstructor::initialize(int x, int y) {
+    void ResponseConstructor::initialize() {
         this->buffer.clear();
         this->bytes_sent = 0;
         this->x_i = 1;
         this->y_i = 1;
-        this->x = x;
-        this->y = y;
+        this->x = 1;
+        this->y = 1;
     }
 
     void ResponseConstructor::post() {
@@ -25,6 +26,7 @@ namespace mm_server::rqst {
                 this->buffer.c_str() + this->bytes_sent,
                 std::min(1024, static_cast<int>(this->buffer.size()) - this->bytes_sent)
             )) == -1) {
+                if (errno == EPIPE) { throw err::connection_exception();}
                 throw err::server_exception("Connection write error");
             }
 
@@ -35,7 +37,7 @@ namespace mm_server::rqst {
     }
 
     void ResponseConstructor::construct(const std::string& value) {
-        if (value.size() + this->buffer.size() <= 1023) {
+        if (static_cast<int>(value.size() + this->buffer.size()) <= 1023) {
             this->buffer += value;
         }
         else if (this->buffer.size() == 0) {
@@ -57,13 +59,15 @@ namespace mm_server::rqst {
             this->y_i += 1;
         }
 
-        if (this->buffer.size() >= 1024) {
+        if (static_cast<int>(this->buffer.size()) >= 1024) {
             this->post();
         }
     }
 
     void ResponseConstructor::post_header(const std::map<std::string, std::string>& header) {
-        this->initialize(header.size(), 2);
+        this->initialize();
+        this->x = static_cast<int>(header.size());
+        this->y = 2;
         for (const auto& [key, value] : header) {
             this->construct(key);
             this->construct(value);
@@ -71,11 +75,10 @@ namespace mm_server::rqst {
     }
 
     void ResponseConstructor::post_content(const std::vector<std::vector<std::string>>& content) {
-        if (!content.empty()) {
-            this->initialize(content.size(), content.begin()->size());
-        }
-
+        this->initialize();
+        this->x = static_cast<int>(content.size());
         for (const std::vector<std::string>& row : content) {
+            this->y = static_cast<int>(row.size());
             for (const std::string& item : row) {
                 this->construct(item);
             }

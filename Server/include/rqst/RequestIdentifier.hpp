@@ -21,11 +21,12 @@ namespace mm_server::rqst {
             };
             const std::map<std::string, Value> values = {
                 {"STATUS", Value::status},
+                {"TASK", Value::task},
+                {"RESULT", Value::result},
                 {"UPDATE-NEW", Value::update_new},
                 {"UPDATE-FULL", Value::update_full},
                 {"REGISTER-CLIENT", Value::register_client},
                 {"REGISTER-UNIT", Value::register_unit},
-                {"PROCESS-START", Value::process_start},
                 {"PROCESS-RESET", Value::process_reset},
                 {"LEFT-MATRIX", Value::left_matrix},
                 {"RIGHT-MATRIX", Value::right_matrix}
