@@ -56,11 +56,14 @@ public class ReceiverThread implements Runnable {
                     line = scanner.nextLine();
 
                     if(line.contains("FINISHED")){
-                        finished = false;
+                        finished = true;
+                        System.out.println("Here");
+                    }
+                    else if(line.contains("STOP")){
+                        continueProcessing = false;
                     }
                     else if(line.contains("RESULTS") && scanner.hasNextLine()){
                         values = scanner.nextLine().split(";");
-                        System.out.println("I");
                         for (String value : values) {
                             x = Integer.parseInt(value.split(" ")[0]);
                             y = Integer.parseInt(value.split(" ")[1]);
@@ -88,8 +91,6 @@ public class ReceiverThread implements Runnable {
                 }
 
             }while(this.continueProcessing);
-
-
 
         } catch(InterruptedException | FileNotFoundException e){
             e.printStackTrace();

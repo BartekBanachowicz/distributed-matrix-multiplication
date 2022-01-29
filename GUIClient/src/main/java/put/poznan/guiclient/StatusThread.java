@@ -6,12 +6,11 @@ import java.util.Scanner;
 import java.util.concurrent.BlockingQueue;
 
 public class StatusThread implements Runnable {
-    private BlockingQueue<String[]> sendQueue;
-    private BlockingQueue<String[]> statusQueue;
+    private final BlockingQueue<String[]> sendQueue;
+    private final BlockingQueue<String[]> statusQueue;
     private Boolean continueProcessing = true;
-    private ConnectionThread commThread;
 
-    StatusThread(BlockingQueue<String[]> sendQueue, BlockingQueue<String[]> statusQueue) throws IOException {
+    StatusThread(BlockingQueue<String[]> sendQueue, BlockingQueue<String[]> statusQueue) {
         this.sendQueue = sendQueue;
         this.statusQueue = statusQueue;
     }
@@ -20,7 +19,6 @@ public class StatusThread implements Runnable {
     public void run() {
         String[] message = new String[1];
         message[0] = "GET STATUS";
-        Scanner scanner;
         String[] receivedMessage;
         String[] compUnits = new String[0];
 
@@ -42,6 +40,9 @@ public class StatusThread implements Runnable {
                 }
                 else if(receivedMessage[0].contains("STATUS STOPPED")){
                     GUIClient.getAdapter().setStopped();
+                }
+                else if(receivedMessage[0].contains("STOP")){
+                    continueProcessing = false;
                 }
 
                 if(receivedMessage[1].length()>0){

@@ -1,10 +1,5 @@
 package put.poznan.guiclient;
 
-import javafx.fxml.FXML;
-import javafx.scene.paint.Paint;
-import javafx.scene.shape.Circle;
-import javafx.scene.text.Text;
-
 public class GUIAdapter {
 
     private final GUIClientController controller;
@@ -31,6 +26,10 @@ public class GUIAdapter {
 
     public void setStopped(){
         controller.setStopped();
+    }
+
+    public void setRefused(){
+        controller.setRefused();
     }
 
     public void setListOfUnits(String[] units){

@@ -4,29 +4,24 @@ import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
-import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
+import javafx.scene.control.ProgressBar;
 import javafx.scene.control.TextField;
 import javafx.scene.paint.Paint;
 import javafx.scene.shape.Circle;
 import javafx.scene.text.Text;
-import javafx.scene.control.ProgressBar;
 import javafx.stage.FileChooser;
-import javafx.scene.control.ListView;
 
 import java.awt.*;
 import java.io.File;
-import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Path;
 import java.util.ResourceBundle;
 
 public class GUIClientController implements Initializable {
-    private ConnectionHandler connectionHandler = GUIClient.getConnectionHandler();
-    private DataHandler dataHandler = GUIClient.getDataHandler();
+    private final ConnectionHandler connectionHandler = GUIClient.getConnectionHandler();
+    private final DataHandler dataHandler = GUIClient.getDataHandler();
     private final Desktop desktop = Desktop.getDesktop();
-
-    @FXML
-    private Label welcomeText;
 
     @FXML
     private TextField serverAddressField;
@@ -68,17 +63,15 @@ public class GUIClientController implements Initializable {
     private ListView<String> unitsList;
 
     @FXML
-    protected void onHelloButtonClick() {
-        welcomeText.setText("Welcome to JavaFX Application!");
-    }
+    private Button abortButton;
 
     @FXML
-    protected void onConnectButtonClick() throws IOException {
+    protected void onConnectButtonClick() {
         if(serverAddressField.getText().matches("[0-9]+.[0-9]+.[0-9]+.[0-9]+:[0-9]+")){
             String[] address = serverAddressField.getText().split(":");
             connectionHandler.setConnectionParams(Integer.parseInt(address[1]), address[0]);
 
-            HelperThread helperThreadClass = new HelperThread(dataHandler, connectionHandler, "CONNECT", this);
+            HelperThread helperThreadClass = new HelperThread(dataHandler, connectionHandler, "CONNECT");
             Thread helperThread = new Thread(helperThreadClass);
             helperThread.start();
         }
@@ -98,7 +91,7 @@ public class GUIClientController implements Initializable {
                 && (dataHandler.getResultMatrixPath() != null))
         {
             System.out.println("Start thread created");
-            HelperThread helperThreadClass = new HelperThread(dataHandler, connectionHandler, "START", this);
+            HelperThread helperThreadClass = new HelperThread(dataHandler, connectionHandler, "START");
             Thread helperThread = new Thread(helperThreadClass);
             helperThread.start();
         }
@@ -137,7 +130,7 @@ public class GUIClientController implements Initializable {
             }
         }
 
-        HelperThread helperThreadClass = new HelperThread(dataHandler, connectionHandler, "GENERATE", this);
+        HelperThread helperThreadClass = new HelperThread(dataHandler, connectionHandler, "GENERATE");
         Thread helperThread = new Thread(helperThreadClass);
         helperThread.start();
 
@@ -208,6 +201,11 @@ public class GUIClientController implements Initializable {
         }
     }
 
+    @FXML
+    protected void onAbortButtonClick(){
+        Platform.runLater(new HelperThread(dataHandler, connectionHandler, "ABORT"));
+    }
+
     public void setConnected(){
         serverStatusDiode.setFill(Paint.valueOf("#46993d"));
         serverStatusText.setText("Connected: IDLE");
@@ -233,14 +231,16 @@ public class GUIClientController implements Initializable {
         serverStatusText.setText("Connected: Stopped");
     }
 
+    public void setRefused(){
+        serverStatusDiode.setFill(Paint.valueOf("#d40d0d"));
+        serverStatusText.setText("Connection refused");
+    }
+
     public void setListOfUnits(String[] units){
-        Platform.runLater(new Runnable() {
-            @Override
-            public void run() {
-                unitsList.getItems().clear();
-                for (String unit : units) {
-                    unitsList.getItems().add(unit);
-                }
+        Platform.runLater(() -> {
+            unitsList.getItems().clear();
+            for (String unit : units) {
+                unitsList.getItems().add(unit);
             }
         });
     }

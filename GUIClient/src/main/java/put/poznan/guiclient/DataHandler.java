@@ -4,9 +4,11 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+import java.util.Scanner;
 
-import static java.lang.Math.random;
 import static java.lang.Math.sqrt;
 
 public class DataHandler {
@@ -61,14 +63,6 @@ public class DataHandler {
         this.rightMatrix = loadMatrixFromFile(this.rightMatrixPath);
     }
 
-    public double[][] getLeftMatrix() {
-        return leftMatrix;
-    }
-
-    public double[][] getRightMatrix() {
-        return rightMatrix;
-    }
-
     public String getLeftMatrixAsString(){
         StringBuilder builder = new StringBuilder();
         for(int i=0; i<matrixSize; i++){
@@ -101,10 +95,6 @@ public class DataHandler {
         return builder.toString();
     }
 
-    public int getMatrixSize() {
-        return matrixSize;
-    }
-
     public Path getLeftMatrixPath() {
         return leftMatrixPath;
     }
@@ -122,10 +112,6 @@ public class DataHandler {
             }
         }
         saveMatrixToFile(newMatrixPath, newMatrix);
-    }
-
-    public void setResultMatrixSize(int resultMatrixSize) {
-        this.resultMatrixSize = resultMatrixSize;
     }
 
     public void setNewMatrixPath(Path newMatrixPath) {
@@ -166,10 +152,6 @@ public class DataHandler {
 
     public void writeToResultMatrix(int x, int y, double value){
         this.resultMatrix[x][y] = value;
-    }
-
-    public double readFromResultMatrix(int x, int y){
-        return this.resultMatrix[x][y];
     }
 
     public void createResultMatrix(){

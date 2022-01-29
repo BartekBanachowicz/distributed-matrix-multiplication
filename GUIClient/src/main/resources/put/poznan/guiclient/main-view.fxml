@@ -109,7 +109,7 @@
                </Text>
                <TextField fx:id="resultMatrixDirectory" layoutX="17.0" layoutY="198.0" prefHeight="25.0" prefWidth="224.0" promptText="Directory for file" />
                <Button fx:id="resultMatrixButton" layoutX="256.0" layoutY="197.0" mnemonicParsing="false" onMouseClicked="#onBrowserButtonClick_result" prefHeight="25.0" prefWidth="64.0" style="-fx-background-color: #adb5bd;" text="Browser" />
-               <Button layoutX="176.0" layoutY="370.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="146.0" style="-fx-background-color: #bb3e03;" text="Stop calculations" textAlignment="CENTER" textFill="WHITE">
+               <Button fx:id="abortButton" layoutX="176.0" layoutY="370.0" mnemonicParsing="false" onMouseClicked="#onAbortButtonClick" prefHeight="25.0" prefWidth="146.0" style="-fx-background-color: #bb3e03;" text="Abort calculations" textAlignment="CENTER" textFill="WHITE">
                   <font>
                      <Font name="System Bold" size="12.0" />
                   </font>

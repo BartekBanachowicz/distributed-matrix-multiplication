@@ -1,26 +1,17 @@
 package put.poznan.guiclient;
 
 import javafx.application.Application;
-import javafx.fxml.FXML;
+import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
-import javafx.scene.image.Image;
-import javafx.scene.paint.Paint;
-import javafx.scene.shape.Circle;
-import javafx.scene.text.Text;
-import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-import javafx.scene.control.TextField;
-
 
 import java.io.IOException;
-import java.net.URL;
-import java.util.Objects;
 
 public class GUIClient extends Application {
     private static Stage stage;
-    private static DataHandler dataHandler = new DataHandler();
-    private static ConnectionHandler connectionHandler = new ConnectionHandler();
+    private static final DataHandler dataHandler = new DataHandler();
+    private static final ConnectionHandler connectionHandler = new ConnectionHandler();
     private static GUIAdapter adapter;
 
     @Override
@@ -32,6 +23,15 @@ public class GUIClient extends Application {
         stage.setTitle("Matrix multiplication");
         stage.setScene(scene);
         stage.show();
+        stage.setOnCloseRequest(windowEvent -> {
+            try {
+                connectionHandler.closeApp();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            Platform.exit();
+            System.exit(0);
+        });
     }
 
 

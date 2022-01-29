@@ -2,7 +2,6 @@ package put.poznan.guiclient;
 
 import java.io.*;
 import java.net.Socket;
-import java.nio.charset.StandardCharsets;
 import java.util.concurrent.BlockingQueue;
 
 public class ConnectionThread implements Runnable{
@@ -61,6 +60,10 @@ public class ConnectionThread implements Runnable{
             String serverMessage = reader.readLine();
             System.out.println(serverMessage);
 
+            if(serverMessage.contains("FINISHED")){
+                this.finished = true;
+            }
+
             if(!serverMessage.contains("STATUS")){
                 handleErrors(serverMessage);
             } else {
@@ -72,10 +75,6 @@ public class ConnectionThread implements Runnable{
                     receivedStatus[1] = serverMessage;
                 }
                 statusQueue.put(receivedStatus);
-            }
-
-            if(serverMessage.contains("FINISHED")){
-                this.finished = true;
             }
 
         } catch (IOException | InterruptedException e) {
@@ -95,7 +94,6 @@ public class ConnectionThread implements Runnable{
             writer.print("\n");
             writer.flush();
 
-            System.out.println("Czekam na CODE 0");
             serverMessage = reader.readLine();
             System.out.println(serverMessage);
 
@@ -114,7 +112,9 @@ public class ConnectionThread implements Runnable{
         try {
 
             if(finished){
-                dataQueue.put("FINISHED");
+                serverMessage = "FINISHED";
+                dataQueue.put(serverMessage);
+                finished = false;
                 return;
             }
 
@@ -144,15 +144,14 @@ public class ConnectionThread implements Runnable{
         writer.print(message[0]+"\n");
         writer.flush();
 
-        String serverMessage = null;
+        String serverMessage;
         try {
             serverMessage = reader.readLine();
+            if(!serverMessage.matches("CODE 0")){
+                handleErrors(serverMessage);
+            }
         } catch (IOException e) {
             e.printStackTrace();
-        }
-
-        if(!serverMessage.matches("CODE 0")){
-            handleErrors(serverMessage);
         }
     }
 
@@ -183,6 +182,13 @@ public class ConnectionThread implements Runnable{
             }
             else if (message[0].contains("PUT PROCESS-RESET")) {
                 putReset(message);
+            }
+            else if (message[0].contains("ABORT")){
+                message[0] = "PUT PROCESS-RESET";
+                putReset(message);
+            }
+            else if (message[0].contains("STOP")){
+                continueProcessing = false;
             }
         }
 

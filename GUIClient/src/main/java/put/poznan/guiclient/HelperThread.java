@@ -4,16 +4,14 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 
 public class HelperThread implements Runnable {
-    private DataHandler dataHandler;
-    private ConnectionHandler connectionHandler;
-    private String operation;
-    private GUIClientController controller;
+    private final DataHandler dataHandler;
+    private final ConnectionHandler connectionHandler;
+    private final String operation;
 
-    HelperThread(DataHandler xDataHandler, ConnectionHandler xConnectionHandler, String xOperation, GUIClientController controller){
-        this.dataHandler = xDataHandler;
-        this.connectionHandler = xConnectionHandler;
-        this.operation = xOperation;
-        this.controller = controller;
+    HelperThread(DataHandler dataHandler, ConnectionHandler connectionHandler, String operation){
+        this.dataHandler = dataHandler;
+        this.connectionHandler = connectionHandler;
+        this.operation = operation;
     }
 
     private void collectData() throws IOException {
@@ -24,8 +22,12 @@ public class HelperThread implements Runnable {
         dataHandler.generateMatrixToFile();
     }
 
-    private void connectToServer() throws IOException {
-        connectionHandler.establishConnection();
+    private void connectToServer() {
+        try {
+            connectionHandler.establishConnection();
+        } catch (IOException e) {
+            GUIClient.getAdapter().setRefused();
+        }
     }
 
     private void startProcessing() throws FileNotFoundException {
@@ -46,16 +48,16 @@ public class HelperThread implements Runnable {
         connectionHandler.writeToQueue(messageRight);
     }
 
+    private void abort() throws InterruptedException {
+        connectionHandler.abort();
+    }
+
+
     @Override
     public void run() {
         switch (this.operation){
             case "CONNECT":
-                            try {
-                                this.connectToServer();
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
-
+                            this.connectToServer();
                             break;
 
             case "START":
@@ -70,12 +72,20 @@ public class HelperThread implements Runnable {
                             } catch (IOException e) {
                                 e.printStackTrace();
                             }
-
                             break;
+
             case "GENERATE":
                             try {
                                 this.generateData();
                             } catch (FileNotFoundException e) {
+                                e.printStackTrace();
+                            }
+                            break;
+
+            case "ABORT":
+                            try {
+                                abort();
+                            } catch (InterruptedException e) {
                                 e.printStackTrace();
                             }
                             break;
