@@ -185,7 +185,7 @@ namespace mm_server {
                 for (const auto& [key, value] : this->connections) {
                     if (value.type == conn::Type::client) { server_busy = true; }
                 }
-                this->connections[descriptor].type = conn::Type::client;
+                if (!server_busy) { this->connections[descriptor].type = conn::Type::client; }
                 this->connections_mutex.unlock();
                 if (server_busy) { throw err::request_exception(6); }
                 break;
