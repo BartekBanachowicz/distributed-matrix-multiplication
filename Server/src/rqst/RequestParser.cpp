@@ -76,16 +76,19 @@ namespace mm_server::rqst {
         switch (this->state) {
             case 0:
                 this->state = 1;
+                [[fallthrough]];
             case 1:
                 this->key.push_back(this->buffer[this->i]);
                 break;
             case 2:
                 this->state = 3;
+                [[fallthrough]];
             case 3:
                 this->value.push_back(this->buffer[this->i]);
                 break;
             case 4:
                 this->state = 5;
+                [[fallthrough]];
             case 5:
                 this->value.push_back(this->buffer[this->i]);
                 break;
