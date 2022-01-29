@@ -34,22 +34,16 @@ public class HelperThread implements Runnable {
         dataHandler.initializeResultMatrix();
 
         String[] messageLeft = new String[2];
-        messageLeft[0] = "POST LEFT-MATRIX\n";
-        messageLeft[1] = dataHandler.getLeftMatrixAsString()+"\n";
-        System.out.println(messageLeft[0]);
-        System.out.println(messageLeft[1]);
+        messageLeft[0] = "POST LEFT-MATRIX";
+        messageLeft[1] = dataHandler.getLeftMatrixAsString();
+        System.out.println("Left matrix in queue");
         connectionHandler.writeToQueue(messageLeft);
 
-        System.out.println("Left sent");
-
         String[] messageRight = new String[2];
-        messageRight[0] = "POST RIGHT-MATRIX\n";
-        messageRight[1] = dataHandler.getRightMatrixAsString()+"\n";
-        System.out.println(messageRight[0]);
-        System.out.println(messageRight[1]);
+        messageRight[0] = "POST RIGHT-MATRIX";
+        messageRight[1] = dataHandler.getRightMatrixAsString();
+        System.out.println("Right matrix in queue");
         connectionHandler.writeToQueue(messageRight);
-
-        System.out.println("Right sent");
     }
 
     @Override
@@ -79,12 +73,12 @@ public class HelperThread implements Runnable {
 
                             break;
             case "GENERATE":
-                            System.out.println("What am I doing here?");
                             try {
                                 this.generateData();
                             } catch (FileNotFoundException e) {
                                 e.printStackTrace();
                             }
+                            break;
         }
     }
 }

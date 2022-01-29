@@ -31,7 +31,6 @@ public class StatusThread implements Runnable {
 
                 receivedMessage = statusQueue.take();
 
-
                 if(receivedMessage[0].contains("STATUS IDLE")){
                     GUIClient.getAdapter().setConnected();
                 }

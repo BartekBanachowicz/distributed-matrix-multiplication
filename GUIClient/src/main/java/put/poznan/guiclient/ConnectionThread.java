@@ -11,8 +11,9 @@ public class ConnectionThread implements Runnable{
     private final BlockingQueue<String[]> statusQueue;
     private final BlockingQueue<String> dataQueue;
     private Boolean continueProcessing = true;
-    private final InputStream inputStream;
-    private final OutputStream outputStream;
+    private final BufferedReader reader;
+    private final PrintWriter writer;
+    private boolean finished = false;
 
     ConnectionThread(Socket xClientSocket, BlockingQueue<String[]> sendQueue, BlockingQueue<String[]> statusQueue,
                      BlockingQueue<String> dataQueue) throws IOException {
@@ -20,8 +21,10 @@ public class ConnectionThread implements Runnable{
         this.sendQueue = sendQueue;
         this.statusQueue = statusQueue;
         this.dataQueue = dataQueue;
-        this.inputStream = this.clientSocket.getInputStream();
-        this.outputStream = this.clientSocket.getOutputStream();
+        InputStream inputStream = this.clientSocket.getInputStream();
+        OutputStream outputStream = this.clientSocket.getOutputStream();
+        this.reader = new BufferedReader(new InputStreamReader(inputStream));
+        this.writer = new PrintWriter(outputStream, false);
     }
 
     private void handleErrors(String message){
@@ -29,56 +32,50 @@ public class ConnectionThread implements Runnable{
     }
 
     private void makeUpConnection(){
-        byte[] buffer = new byte[200000];
-        int validData;
-        String received = "";
-
         GUIClient.getAdapter().setConnecting();
-
+        String message = "PUT REGISTER-CLIENT\n";
+        String serverMessage = "";
+        writer.flush();
         try {
-            outputStream.write("PUT REGISTER-CLIENT\n".getBytes());
-            validData = inputStream.read(buffer);
-            received = new String(buffer, 0, validData-1, StandardCharsets.UTF_8);
+            writer.print(message);
+            writer.flush();
+            serverMessage = reader.readLine();
+            System.out.println(serverMessage);
+
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        if(received.contains("CODE 0")){
+        if(serverMessage.contains("CODE 0")){
             GUIClient.getAdapter().setConnected();
         }
     }
 
     private void getStatus(String[] message){
-        byte[] buffer = new byte[200000];
-        int validData;
         String[] receivedStatus = new String[2];
 
-        BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-        PrintWriter writer = new PrintWriter(outputStream, true);
-
-
         try {
-
-            writer.println(message[0]);
+            writer.print(message[0]+"\n");
+            writer.flush();
+            System.out.println("GET STATUS");
             String serverMessage = reader.readLine();
             System.out.println(serverMessage);
-
-            /*outputStream.write(message[0].getBytes());
-            validData = inputStream.read(buffer);
-            received = new String(buffer, 0, validData-1, StandardCharsets.UTF_8);
-            System.out.println(received);*/
 
             if(!serverMessage.contains("STATUS")){
                 handleErrors(serverMessage);
             } else {
                 receivedStatus[0] = serverMessage;
+                receivedStatus[1] = "";
                 if(serverMessage.matches(".+UNITS \\d+$")
                         && Integer.parseInt(serverMessage.split(";")[2].split(" ")[1])>0){
                     serverMessage = reader.readLine();
-                    System.out.println(serverMessage);
                     receivedStatus[1] = serverMessage;
                 }
                 statusQueue.put(receivedStatus);
+            }
+
+            if(serverMessage.contains("FINISHED")){
+                this.finished = true;
             }
 
         } catch (IOException | InterruptedException e) {
@@ -87,21 +84,23 @@ public class ConnectionThread implements Runnable{
     }
 
     private void postMatrix(String[] message){
-        byte[] buffer = new byte[200000];
-        int validData;
-        String received;
+        String serverMessage;
 
         try {
-            System.out.println(message[0]);
-            System.out.println(message[1]);
-            outputStream.write(message[0].getBytes());
-            outputStream.write(message[1].getBytes());
+            writer.print(message[0]+"\n");
 
-            validData = inputStream.read(buffer);
-            received = new String(buffer, 0, validData-1, StandardCharsets.UTF_8);
+            for(int i=1; i<message.length; i++){
+                writer.print(message[i]);
+            }
+            writer.print("\n");
+            writer.flush();
 
-            if(!received.matches("CODE 0")){
-                handleErrors(received);
+            System.out.println("Czekam na CODE 0");
+            serverMessage = reader.readLine();
+            System.out.println(serverMessage);
+
+            if(!serverMessage.matches("CODE 0")){
+                handleErrors(serverMessage);
             }
 
         } catch (IOException e) {
@@ -109,26 +108,54 @@ public class ConnectionThread implements Runnable{
         }
     }
 
-    private void getUpdate(String[] message){
-        byte[] buffer = new byte[200000];
-        int validData;
-        String received;
+    private void getUpdateNew(String[] message){
+        String serverMessage;
 
         try {
-            outputStream.write(message[0].getBytes());
-            validData = inputStream.read(buffer);
-            received = new String(buffer, 0, validData-1, StandardCharsets.UTF_8);
 
-            if(!received.contains("RESULTS")){
-                handleErrors(received);
+            if(finished){
+                dataQueue.put("FINISHED");
+                return;
+            }
+
+            writer.print(message[0]+"\n");
+            writer.flush();
+            System.out.println("GET UPDATE");
+
+            serverMessage = reader.readLine();
+
+            if(!serverMessage.contains("RESULTS")){
+                handleErrors(serverMessage);
             } else {
-                dataQueue.put(received);
+
+                if(Integer.parseInt(serverMessage.split(";")[1].split(" ")[1]) > 0){
+                    serverMessage += "\n" + reader.readLine();
+                }
+                System.out.println(serverMessage);
+                dataQueue.put(serverMessage);
             }
 
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
     }
+
+    public void putReset(String[] message) {
+        writer.print(message[0]+"\n");
+        writer.flush();
+
+        String serverMessage = null;
+        try {
+            serverMessage = reader.readLine();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        if(!serverMessage.matches("CODE 0")){
+            handleErrors(serverMessage);
+        }
+    }
+
 
     @Override
     public void run() {
@@ -152,7 +179,10 @@ public class ConnectionThread implements Runnable{
                 postMatrix(message);
             }
             else if (message[0].contains("GET UPDATE")) {
-                getUpdate(message);
+                getUpdateNew(message);
+            }
+            else if (message[0].contains("PUT PROCESS-RESET")) {
+                putReset(message);
             }
         }
 

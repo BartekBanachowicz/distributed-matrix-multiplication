@@ -35,6 +35,7 @@ public class DataHandler {
 
         if(sqrt(buffer.size())%1 == 0){
             matrixSize = (int) sqrt(buffer.size());
+            resultMatrixSize = matrixSize;
         } else{
             //TODO - There is not square matrix at input.
             System.out.println("It is not a square matrix.");
@@ -197,6 +198,10 @@ public class DataHandler {
         }
 
         writer.close();
+    }
+
+    public void saveResultMatrixToFile() throws FileNotFoundException {
+        saveMatrixToFile(this.resultMatrixPath, this.resultMatrix);
     }
 
 }
