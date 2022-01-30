@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.shape.*?>
+<?import javafx.scene.text.*?>
+
+<VBox alignment="CENTER" prefHeight="480.0" prefWidth="700.0" spacing="20.0" style="-fx-background-color: #FFFFFF;" xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1" fx:controller="put.poznan.guiclient.GUIClientController">
+    <padding>
+        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+    </padding>
+   <HBox prefHeight="482.0" prefWidth="640.0">
+      <children>
+         <Pane prefHeight="60.0" prefWidth="327.0">
+            <children>
+               <TextField id="serverAddressField" fx:id="serverAddressField" layoutX="14.0" layoutY="85.0" prefHeight="25.0" prefWidth="146.0" promptText="192.168.1.2:8080" />
+               <Button id="connectButton" fx:id="connectButton" layoutX="171.0" layoutY="85.0" mnemonicParsing="false" onMouseClicked="#onConnectButtonClick" style="-fx-background-color: #90be6d;" text="Connect" />
+               <Text layoutX="15.0" layoutY="56.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Server connection">
+                  <font>
+                     <Font name="System Bold" size="12.0" />
+                  </font></Text>
+               <Text layoutX="15.0" layoutY="71.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Enter server IP and port number (e.g. 192.168.1.2:8080)">
+                  <font>
+                     <Font size="10.0" />
+                  </font>
+               </Text>
+               <Text layoutX="15.0" layoutY="171.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Connected processing units ">
+                  <font>
+                     <Font name="System Bold" size="12.0" />
+                  </font>
+               </Text>
+               <Text layoutX="15.0" layoutY="186.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Remote units contected to server">
+                  <font>
+                     <Font size="10.0" />
+                  </font>
+               </Text>
+               <Circle id="serverStatusDiode" fx:id="serverStatusDiode" fill="#868686" layoutX="89.0" layoutY="123.0" radius="4.0" stroke="BLACK" strokeType="INSIDE" />
+               <Text layoutX="15.0" layoutY="126.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Server status:">
+                  <font>
+                     <Font name="System Bold" size="10.0" />
+                  </font>
+               </Text>
+               <Text id="serverStatusText" fx:id="serverStatusText" layoutX="97.0" layoutY="126.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Disconnected">
+                  <font>
+                     <Font size="10.0" />
+                  </font>
+               </Text>
+               <Text layoutX="14.0" layoutY="27.0" strokeType="OUTSIDE" strokeWidth="0.0" text="System configuration">
+                  <font>
+                     <Font name="System Bold" size="14.0" />
+                  </font>
+               </Text>
+               <Line endX="197.79998779296875" layoutX="116.0" layoutY="35.0" startX="-100.0" stroke="#a1a1a1" />
+               <ListView fx:id="unitsList" layoutX="14.0" layoutY="202.0" prefHeight="218.0" prefWidth="299.0" />
+            </children>
+         </Pane>
+         <Pane prefHeight="423.0" prefWidth="327.0">
+            <children>
+               <Text layoutX="15.0" layoutY="29.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Matrix multiplication">
+                  <font>
+                     <Font name="System Bold" size="14.0" />
+                  </font>
+               </Text>
+               <Line endX="202.0" layoutX="118.0" layoutY="360.0" startX="-100.0" stroke="#a1a1a1" />
+               <Text layoutX="16.0" layoutY="59.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Add matrices">
+                  <font>
+                     <Font name="System Bold" size="12.0" />
+                  </font>
+               </Text>
+               <Text layoutX="16.0" layoutY="75.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Enter path to *.csv file">
+                  <font>
+                     <Font size="10.0" />
+                  </font>
+               </Text>
+               <TextField id="leftMatrixDirectory" fx:id="leftMatrixDirectory" layoutX="15.0" layoutY="88.0" prefHeight="25.0" prefWidth="224.0" promptText="Left matrix directory" />
+               <Button fx:id="leftMatrixButton" layoutX="254.0" layoutY="87.0" mnemonicParsing="false" onMouseClicked="#onBrowserButtonClick_left" prefHeight="25.0" prefWidth="64.0" style="-fx-background-color: #adb5bd;" text="Browser" />
+               <TextField fx:id="rightMatrixDirectory" layoutX="16.0" layoutY="122.0" prefHeight="25.0" prefWidth="224.0" promptText="Right matrix directory" />
+               <Button fx:id="rightMatrixButton" layoutX="255.0" layoutY="121.0" mnemonicParsing="false" onMouseClicked="#onBrowserButtonClick_right" prefHeight="25.0" prefWidth="64.0" style="-fx-background-color: #adb5bd;" text="Browser" />
+               <Text layoutX="17.0" layoutY="246.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Generate random matrix">
+                  <font>
+                     <Font name="System Bold" size="12.0" />
+                  </font>
+               </Text>
+               <Text layoutX="16.0" layoutY="262.0" strokeType="OUTSIDE" strokeWidth="0.0" text="You can generate random matrix. Provide size and path to save *.csv file" wrappingWidth="169.9287109375">
+                  <font>
+                     <Font size="10.0" />
+                  </font>
+               </Text>
+               <TextField fx:id="newMatrixDirectory" layoutX="16.0" layoutY="292.0" onAction="#onWriteToNewMatrixDirectoryField" prefHeight="25.0" prefWidth="224.0" promptText="Directory for file" />
+               <Button fx:id="newMatrixButton" layoutX="255.0" layoutY="291.0" mnemonicParsing="false" onMouseClicked="#onBrowserButtonClick_new" prefHeight="25.0" prefWidth="64.0" style="-fx-background-color: #adb5bd;" text="Browser" />
+               <TextField id="matrixSizeField" fx:id="matrixSizeField" layoutX="17.0" layoutY="324.0" onAction="#onWriteToNewMatrixSizeField" prefHeight="25.0" prefWidth="224.0" promptText="Matrix size" />
+               <Button fx:id="generateButton" layoutX="255.0" layoutY="323.0" mnemonicParsing="false" onMouseClicked="#onGenerateButtonClick" style="-fx-background-color: #ced4da;" text="Generate" />
+               <ProgressBar id="progressBar" fx:id="progressBar" layoutX="18.0" layoutY="403.0" prefHeight="18.0" prefWidth="303.0" progress="0.0" />
+               <Button id="startProcessingButton" fx:id="startProcessingButton" layoutX="19.0" layoutY="370.0" mnemonicParsing="false" onMouseClicked="#onStartProcessingButtonClick" prefHeight="25.0" prefWidth="146.0" style="-fx-background-color: #277da1;" text="Start calculations" textAlignment="CENTER" textFill="WHITE">
+                  <font>
+                     <Font name="System Bold" size="12.0" />
+                  </font>
+               </Button>
+               <Text layoutX="18.0" layoutY="170.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Result location">
+                  <font>
+                     <Font name="System Bold" size="12.0" />
+                  </font>
+               </Text>
+               <Text layoutX="18.0" layoutY="186.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Enter path to *.csv file">
+                  <font>
+                     <Font size="10.0" />
+                  </font>
+               </Text>
+               <TextField fx:id="resultMatrixDirectory" layoutX="17.0" layoutY="198.0" prefHeight="25.0" prefWidth="224.0" promptText="Directory for file" />
+               <Button fx:id="resultMatrixButton" layoutX="256.0" layoutY="197.0" mnemonicParsing="false" onMouseClicked="#onBrowserButtonClick_result" prefHeight="25.0" prefWidth="64.0" style="-fx-background-color: #adb5bd;" text="Browser" />
+               <Button fx:id="abortButton" layoutX="176.0" layoutY="370.0" mnemonicParsing="false" onMouseClicked="#onAbortButtonClick" prefHeight="25.0" prefWidth="146.0" style="-fx-background-color: #bb3e03;" text="Abort calculations" textAlignment="CENTER" textFill="WHITE">
+                  <font>
+                     <Font name="System Bold" size="12.0" />
+                  </font>
+               </Button>
+               <Line endX="202.0" layoutX="115.0" layoutY="35.0" startX="-100.0" stroke="#a1a1a1" />
+            </children>
+         </Pane>
+      </children>
+   </HBox>
+
+    <Label fx:id="welcomeText" />
+</VBox>
