@@ -39,7 +39,6 @@ public class DataHandler {
             matrixSize = (int) sqrt(buffer.size());
             resultMatrixSize = matrixSize;
         } else{
-            //TODO - There is not square matrix at input.
             System.out.println("It is not a square matrix.");
         }
 
