@@ -27,10 +27,8 @@ namespace mm_server {
             int socket_descriptor;
             int epoll_descriptor;
             std::mutex threads_mutex;
-            std::unique_lock<std::mutex> threads_lock{threads_mutex, std::defer_lock};
             std::condition_variable threads_var;
             std::array<bool, 5> threads_idle = {true, true, true, true, true};
-            std::array<std::thread, 5> threads;
             std::map<int, conn::Connection> connections;
             std::mutex connections_mutex;
             rqst::RequestIdentifier request_identifier;

@@ -1,5 +1,6 @@
 #include <iostream>
 #include <exception>
+#include <system_error>
 #include <map>
 #include <string>
 #include <cstring>
@@ -85,6 +86,13 @@ namespace mm_server {
     }
 
     ServerRunner::~ServerRunner() {
+        std::unique_lock<std::mutex> threads_lock{this->threads_mutex};
+        for (int i = 0; i < static_cast<int>(this->threads_idle.size()); ++i) {
+            if (!this->threads_idle[i]) {
+                this->threads_var.wait(threads_lock);
+            }
+        }
+
         this->connections_mutex.lock();
         for (const auto& [key, value] : this->connections) {
             close(key);
@@ -309,10 +317,9 @@ namespace mm_server {
             this->running = false;
         }
 
-        this->threads_lock.lock();
+        this->threads_mutex.lock();
         this->threads_idle[thread_i] = true;
-        this->threads[thread_i].detach();
-        this->threads_lock.unlock();
+        this->threads_mutex.unlock();
         this->threads_var.notify_one();
     }
 
@@ -329,7 +336,7 @@ namespace mm_server {
 
             for (int i = 0; i < ready_descriptors; ++i) {
                 if (this->running) {
-                    this->threads_lock.lock();
+                    std::unique_lock<std::mutex> threads_lock{this->threads_mutex};
 
                     while (true) {
                         thread_free = false;
@@ -342,15 +349,13 @@ namespace mm_server {
 
                         if (thread_free) {
                             this->threads_idle[thread_i] = false;
-                            this->threads[thread_i] = std::thread(&ServerRunner::handle_connection_wrapper, this, events[i], thread_i);
+                            std::thread(&ServerRunner::handle_connection_wrapper, this, events[i], thread_i).detach();
                             break;
                         }
                         else {
-                            this->threads_var.wait(this->threads_lock);
+                            this->threads_var.wait(threads_lock);
                         }
                     }
-
-                    this->threads_lock.unlock();
                 }
             }
         }
