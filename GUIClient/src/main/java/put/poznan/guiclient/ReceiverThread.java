@@ -50,17 +50,11 @@ public class ReceiverThread implements Runnable {
                 int x, y;
                 double val;
 
-                if(dataQueue.contains("FINISHED")){
-                    line = dataQueue.take();
-                    finished = true;
-                }
-
                 sendQueue.put(message);
                 scanner = new Scanner(dataQueue.take());
 
                 if(scanner.hasNextLine()){
                     line = scanner.nextLine();
-
 
                     if(line.contains("STOP")){
                         continueProcessing = false;
@@ -85,7 +79,7 @@ public class ReceiverThread implements Runnable {
 
                 System.out.println("Odebrane: "+resultMatrixValuesCounter);
 
-                if(finished && resultMatrixValuesCounter == numberOfResultValues){
+                if(resultMatrixValuesCounter == numberOfResultValues){
                     continueProcessing = false;
                     GUIClient.getAdapter().changeProgress(0.0);
                     dataHandler.saveResultMatrixToFile();
