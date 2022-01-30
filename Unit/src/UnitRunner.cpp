@@ -85,7 +85,6 @@ namespace mm_unit {
                     throw err::unit_exception("Protocol error");
                 }
                 if (std::stoi(header["CODE"]) == 5) {
-                    std::cout << "Sleep" << std::endl;
                     std::this_thread::sleep_for(timespan);
                     continue;
                 }
