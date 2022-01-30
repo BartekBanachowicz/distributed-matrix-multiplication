@@ -116,13 +116,12 @@ namespace mm_server::rqst {
 
             ++this->i;
         }
-
-        this->i = 0;
     }
 
     void RequestParser::get() {
         while (true) {
             this->bytes_read = read(this->descriptor, this->buffer, 1024);
+            this->i = 0;
             if (this->bytes_read == -1) {
                 throw err::server_exception("Connection read error");
             }

@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <iostream>
 #include <unistd.h>
 
 #include <rqst/ResponseConstructor.hpp>
@@ -37,12 +38,7 @@ namespace mm_server::rqst {
     }
 
     void ResponseConstructor::construct(const std::string& value) {
-        if (static_cast<int>(value.size() + this->buffer.size()) <= 1023) {
-            this->buffer += value;
-        }
-        else if (this->buffer.size() == 0) {
-            this->buffer = value;
-        }
+        this->buffer += value;
 
         if (this->x_i == this->x && this->y_i == this->y) {
             this->buffer.push_back('\n');
@@ -61,6 +57,7 @@ namespace mm_server::rqst {
 
         if (static_cast<int>(this->buffer.size()) >= 1024) {
             this->post();
+            this->buffer.clear();
         }
     }
 

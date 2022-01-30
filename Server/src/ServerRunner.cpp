@@ -164,7 +164,7 @@ namespace mm_server {
             case rqst::Value::task:
                 if (connection_type != conn::Type::unit) { throw err::request_exception(4); }
                 content = this->processor.assign_task(descriptor);
-                header["TASKS"] = std::to_string(1);
+                header["SIZE"] = std::to_string(content.size());
                 break;
             default:
                 throw err::request_exception(2);
