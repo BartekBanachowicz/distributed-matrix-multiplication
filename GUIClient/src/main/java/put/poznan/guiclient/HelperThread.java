@@ -35,6 +35,8 @@ public class HelperThread implements Runnable {
         dataHandler.addRightMatrix();
         dataHandler.initializeResultMatrix();
 
+        System.out.println("Po wczytaniu");
+
         String[] messageLeft = new String[2];
         messageLeft[0] = "POST LEFT-MATRIX";
         messageLeft[1] = dataHandler.getLeftMatrixAsString();

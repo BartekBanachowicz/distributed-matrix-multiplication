@@ -1,8 +1,6 @@
 package put.poznan.guiclient;
 
-import java.io.IOException;
 import java.util.Arrays;
-import java.util.Scanner;
 import java.util.concurrent.BlockingQueue;
 
 public class StatusThread implements Runnable {
@@ -45,14 +43,15 @@ public class StatusThread implements Runnable {
                     continueProcessing = false;
                 }
 
+                String[] units = new String[0];
                 if(receivedMessage[1].length()>0){
-                    String[] units = receivedMessage[1].split(";");
-
-                    if(!Arrays.equals(compUnits, units)){
-                        compUnits = units;
-                        GUIClient.getAdapter().setListOfUnits(compUnits);
-                    }
+                    units = receivedMessage[1].split(";");
                 }
+                if(!Arrays.equals(compUnits, units)){
+                    compUnits = units;
+                    GUIClient.getAdapter().setListOfUnits(compUnits);
+                }
+
             } while(this.continueProcessing);
         } catch(InterruptedException e){
             e.printStackTrace();

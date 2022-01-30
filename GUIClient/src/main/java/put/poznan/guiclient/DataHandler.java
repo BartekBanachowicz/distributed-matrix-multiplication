@@ -43,14 +43,17 @@ public class DataHandler {
         }
 
         matrix = new double[matrixSize][matrixSize];
+        int iter = 0;
 
         for(int i=0; i<matrixSize; i++){
             for(int j=0; j<matrixSize; j++){
-                matrix[i][j] = Double.parseDouble(buffer.get(0));
-                buffer.remove(0);
+                matrix[i][j] = Double.parseDouble(buffer.get(iter));
+                iter++;
             }
         }
+
         scanner.close();
+        buffer.clear();
         return matrix;
     }
 

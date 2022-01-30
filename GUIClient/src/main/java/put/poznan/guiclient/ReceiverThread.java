@@ -44,22 +44,25 @@ public class ReceiverThread implements Runnable {
         try{
             do{
                 Thread.sleep(10000);
-                sendQueue.put(message);
 
-                scanner = new Scanner(dataQueue.take());
                 String line;
                 String[] values;
                 int x, y;
                 double val;
 
+                if(dataQueue.contains("FINISHED")){
+                    line = dataQueue.take();
+                    finished = true;
+                }
+
+                sendQueue.put(message);
+                scanner = new Scanner(dataQueue.take());
+
                 if(scanner.hasNextLine()){
                     line = scanner.nextLine();
 
-                    if(line.contains("FINISHED")){
-                        finished = true;
-                        System.out.println("Here");
-                    }
-                    else if(line.contains("STOP")){
+
+                    if(line.contains("STOP")){
                         continueProcessing = false;
                     }
                     else if(line.contains("RESULTS") && scanner.hasNextLine()){
